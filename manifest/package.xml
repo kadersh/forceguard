@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+
+    <!-- Custom Objects and Custom Metadata Types -->
+    <types>
+        <members>Regression_Test_Suite__c</members>
+        <members>Regression_Test_Case__c</members>
+        <members>Regression_Test_Run__c</members>
+        <members>Regression_Test_Result__c</members>
+        <members>Test_Coverage_Snapshot__c</members>
+        <members>Regression_Config__mdt</members>
+        <name>CustomObject</name>
+    </types>
+
+    <!-- Apex Classes -->
+    <types>
+        <members>*</members>
+        <name>ApexClass</name>
+    </types>
+
+    <!-- Lightning Web Components -->
+    <types>
+        <members>*</members>
+        <name>LightningComponentBundle</name>
+    </types>
+
+    <!-- Flows -->
+    <types>
+        <members>*</members>
+        <name>Flow</name>
+    </types>
+
+    <!-- Permission Sets -->
+    <types>
+        <members>*</members>
+        <name>PermissionSet</name>
+    </types>
+
+    <!-- Custom Tabs -->
+    <types>
+        <members>*</members>
+        <name>CustomTab</name>
+    </types>
+
+    <!-- Layouts -->
+    <types>
+        <members>*</members>
+        <name>Layout</name>
+    </types>
+
+    <!-- Custom Metadata Records -->
+    <types>
+        <members>*</members>
+        <name>CustomMetadata</name>
+    </types>
+
+    <version>62.0</version>
+</Package>
