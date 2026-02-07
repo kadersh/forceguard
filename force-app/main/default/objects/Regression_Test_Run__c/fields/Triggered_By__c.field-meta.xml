@@ -28,6 +28,16 @@
                 <default>false</default>
                 <label>Pre-Deployment</label>
             </value>
+            <value>
+                <fullName>Re-run Failed</fullName>
+                <default>false</default>
+                <label>Re-run Failed</label>
+            </value>
+            <value>
+                <fullName>Re-run Single</fullName>
+                <default>false</default>
+                <label>Re-run Single</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

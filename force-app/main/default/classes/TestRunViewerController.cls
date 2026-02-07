@@ -160,7 +160,9 @@ public with sharing class TestRunViewerController {
         } catch (AuraHandledException ahe) {
             throw ahe;
         } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
+            AuraHandledException ex = new AuraHandledException(e.getMessage());
+            ex.setMessage(e.getTypeName() + ': ' + e.getMessage());
+            throw ex;
         }
     }
 

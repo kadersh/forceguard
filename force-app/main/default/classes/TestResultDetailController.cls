@@ -134,7 +134,9 @@ public with sharing class TestResultDetailController {
             insert newRun;
             return newRun.Id;
         } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
+            AuraHandledException ex = new AuraHandledException(e.getMessage());
+            ex.setMessage(e.getTypeName() + ': ' + e.getMessage());
+            throw ex;
         }
     }
 
