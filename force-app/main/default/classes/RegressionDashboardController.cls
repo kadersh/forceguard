@@ -295,7 +295,9 @@ public with sharing class RegressionDashboardController {
     public static void scheduleRun(String frequency, Id suiteId) {
         try {
             if (String.isBlank(frequency)) {
-                throw new AuraHandledException('Frequency is required.');
+                AuraHandledException blankErr = new AuraHandledException('Frequency is required.');
+                blankErr.setMessage('Frequency is required.');
+                throw blankErr;
             }
 
             // Unschedule existing jobs first to prevent duplicates
@@ -312,8 +314,11 @@ public with sharing class RegressionDashboardController {
                     RegressionTestScheduler.scheduleMonthly();
                 }
                 when else {
-                    throw new AuraHandledException('Invalid frequency: ' + frequency +
-                        '. Use daily, weekly, or monthly.');
+                    String invalidMsg = 'Invalid frequency: ' + frequency +
+                        '. Use daily, weekly, or monthly.';
+                    AuraHandledException invalidErr = new AuraHandledException(invalidMsg);
+                    invalidErr.setMessage(invalidMsg);
+                    throw invalidErr;
                 }
             }
         } catch (AuraHandledException e) {

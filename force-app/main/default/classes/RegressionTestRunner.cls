@@ -237,7 +237,9 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
     @AuraEnabled
     public static Id runSuite(Id suiteId) {
         if (suiteId == null) {
-            throw new AuraHandledException('Suite ID is required.');
+            AuraHandledException nullErr = new AuraHandledException('Suite ID is required.');
+            nullErr.setMessage('Suite ID is required.');
+            throw nullErr;
         }
         RegressionTestRunner runner = new RegressionTestRunner(suiteId);
         return Database.executeBatch(runner, 50);
