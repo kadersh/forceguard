@@ -1,0 +1,160 @@
+<template>
+    <lightning-card title="Test Results" icon-name="standard:task2">
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading results" size="medium"></lightning-spinner>
+        </template>
+
+        <template if:false={isLoading}>
+            <!-- Summary Bar -->
+            <template if:true={runInfo}>
+                <div class="slds-p-horizontal_medium slds-p-bottom_small">
+                    <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_medium">
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Run</div>
+                            <span class="slds-text-heading_small">{runInfo.Name}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Suite</div>
+                            <span>{suiteName}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Status</div>
+                            <lightning-badge label={runInfo.Status__c} class={runStatusBadgeClass}></lightning-badge>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Pass Rate</div>
+                            <span class="slds-text-heading_small">{formattedPassRate}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Total / Failed</div>
+                            <span>{runInfo.Total_Tests__c} / {runInfo.Failed__c}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Layer Accordion -->
+            <template if:true={hasLayers}>
+                <div class="slds-p-horizontal_medium">
+                    <lightning-accordion allow-multiple-sections-open active-section-name={activeSections}>
+                        <template for:each={layerList} for:item="layer">
+                            <lightning-accordion-section key={layer.name} name={layer.name} label={layer.sectionLabel}>
+                                <lightning-datatable
+                                    key-field="resultId"
+                                    data={layer.items}
+                                    columns={resultColumns}
+                                    onrowaction={handleResultAction}
+                                    hide-checkbox-column
+                                ></lightning-datatable>
+                            </lightning-accordion-section>
+                        </template>
+                    </lightning-accordion>
+                </div>
+            </template>
+
+            <template if:false={hasLayers}>
+                <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak">
+                    No results available for this run.
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+
+    <!-- Detail Panel for Selected Result -->
+    <template if:true={selectedResult}>
+        <lightning-card title={selectedResultTitle} icon-name="standard:record_lookup" class="slds-m-top_small">
+            <div slot="actions">
+                <lightning-button
+                    label="Copy Error"
+                    icon-name="utility:copy"
+                    onclick={handleCopyError}
+                    disabled={hasNoError}
+                    class="slds-m-right_x-small"
+                ></lightning-button>
+                <lightning-button
+                    label="Close"
+                    icon-name="utility:close"
+                    onclick={handleCloseResultDetail}
+                ></lightning-button>
+            </div>
+
+            <template if:true={isLoadingResultDetail}>
+                <lightning-spinner alternative-text="Loading detail" size="small"></lightning-spinner>
+            </template>
+
+            <template if:false={isLoadingResultDetail}>
+                <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                    <!-- Meta Info -->
+                    <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_medium">
+                        <div class="slds-col slds-size_1-of-3">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Status</div>
+                            <lightning-badge label={selectedResult.result.Status__c} class={selectedResultBadgeClass}></lightning-badge>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Layer</div>
+                            <span>{selectedResult.result.Layer__c}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Duration</div>
+                            <span>{selectedResult.result.Duration_Ms__c} ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Known Issue Toggle -->
+                    <div class="slds-m-bottom_medium">
+                        <lightning-input
+                            type="toggle"
+                            label="Mark as Known Issue"
+                            checked={selectedResult.result.Is_Known_Issue__c}
+                            onchange={handleToggleKnownIssue}
+                            message-toggle-active="Known Issue"
+                            message-toggle-inactive="Not Known"
+                        ></lightning-input>
+                    </div>
+
+                    <!-- Expected vs Actual -->
+                    <template if:true={selectedResult.expectedResult}>
+                        <div class="slds-grid slds-gutters slds-m-bottom_medium">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-text-title_caps slds-m-bottom_xx-small">Expected Result</div>
+                                <div class="slds-box slds-theme_shade">{selectedResult.expectedResult}</div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-text-title_caps slds-m-bottom_xx-small">Actual Result</div>
+                                <div class="slds-box slds-theme_shade">{selectedResultActual}</div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Error Message -->
+                    <template if:true={selectedResult.result.Error_Message__c}>
+                        <div class="slds-m-bottom_medium">
+                            <div class="slds-text-title_caps slds-m-bottom_xx-small">Error Message</div>
+                            <div class="slds-box slds-theme_error slds-text-color_inverse">
+                                {selectedResult.result.Error_Message__c}
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Stack Trace (Collapsible) -->
+                    <template if:true={selectedResult.result.Stack_Trace__c}>
+                        <lightning-accordion allow-multiple-sections-open>
+                            <lightning-accordion-section name="stackTrace" label="Stack Trace">
+                                <pre class="slds-box slds-theme_shade fg-monospace">{selectedResult.result.Stack_Trace__c}</pre>
+                            </lightning-accordion-section>
+                        </lightning-accordion>
+                    </template>
+
+                    <!-- Execution Log (Collapsible) -->
+                    <template if:true={selectedResult.result.Execution_Log__c}>
+                        <lightning-accordion allow-multiple-sections-open class="slds-m-top_small">
+                            <lightning-accordion-section name="execLog" label="Execution Log">
+                                <pre class="slds-box slds-theme_shade fg-monospace">{selectedResult.result.Execution_Log__c}</pre>
+                            </lightning-accordion-section>
+                        </lightning-accordion>
+                    </template>
+                </div>
+            </template>
+        </lightning-card>
+    </template>
+</template>

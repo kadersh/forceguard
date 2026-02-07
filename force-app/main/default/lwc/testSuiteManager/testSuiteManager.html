@@ -1,0 +1,369 @@
+<template>
+    <!-- Header -->
+    <lightning-card title="Test Suite Manager" icon-name="standard:test_suite">
+        <lightning-button
+            label="New Suite"
+            variant="brand"
+            onclick={handleNewSuite}
+            slot="actions"
+        ></lightning-button>
+    </lightning-card>
+
+    <!-- Two-panel layout -->
+    <lightning-layout multiple-rows>
+        <!-- Left Panel: Suite List (40%) -->
+        <lightning-layout-item size="12" medium-device-size="5" padding="around-small">
+            <lightning-card title="Suites" icon-name="standard:record_collection">
+                <template if:true={suitesLoading}>
+                    <lightning-spinner alternative-text="Loading suites"></lightning-spinner>
+                </template>
+                <template if:true={hasSuites}>
+                    <template for:each={suites} for:item="item">
+                        <div key={item.suite.Id}
+                             class={item.cssClass}
+                             data-suite-id={item.suite.Id}
+                             onclick={handleSuiteSelect}>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-p-around_small">
+                                <div class="slds-col slds-grow">
+                                    <p class="slds-text-heading_small slds-truncate">{item.suite.Name}</p>
+                                    <p class="slds-text-body_small slds-text-color_weak">
+                                        {item.suite.Product_Name__c}
+                                        <template if:true={item.suite.Version__c}>
+                                            &nbsp;v{item.suite.Version__c}
+                                        </template>
+                                    </p>
+                                    <p class="slds-text-body_small slds-m-top_xx-small">
+                                        <lightning-badge
+                                            label={item.statusLabel}
+                                            class={item.statusClass}
+                                        ></lightning-badge>
+                                        &nbsp;
+                                        <span class="slds-text-color_weak">
+                                            {item.testCaseCount} cases ({item.activeCount} active)
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="slds-col slds-shrink-none">
+                                    <lightning-button-icon
+                                        icon-name="utility:edit"
+                                        alternative-text="Edit Suite"
+                                        data-suite-id={item.suite.Id}
+                                        onclick={handleEditSuite}
+                                    ></lightning-button-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasSuites}>
+                    <template if:false={suitesLoading}>
+                        <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak">
+                            No test suites found. Create one to get started.
+                        </div>
+                    </template>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+        <!-- Right Panel: Test Cases (60%) -->
+        <lightning-layout-item size="12" medium-device-size="7" padding="around-small">
+            <lightning-card title={testCasesPanelTitle} icon-name="standard:task2">
+                <!-- Filter bar -->
+                <template if:true={selectedSuiteId}>
+                    <div class="slds-p-horizontal_small slds-p-bottom_small">
+                        <lightning-layout>
+                            <lightning-layout-item size="4" padding="horizontal-small">
+                                <lightning-combobox
+                                    label="Layer"
+                                    value={layerFilter}
+                                    options={layerOptions}
+                                    onchange={handleLayerChange}
+                                    placeholder="All Layers"
+                                ></lightning-combobox>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="4" padding="horizontal-small">
+                                <lightning-combobox
+                                    label="Category"
+                                    value={categoryFilter}
+                                    options={categoryOptions}
+                                    onchange={handleCategoryChange}
+                                    placeholder="All Categories"
+                                ></lightning-combobox>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="4" padding="horizontal-small">
+                                <lightning-combobox
+                                    label="Priority"
+                                    value={priorityFilter}
+                                    options={priorityOptions}
+                                    onchange={handlePriorityChange}
+                                    placeholder="All Priorities"
+                                ></lightning-combobox>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
+
+                    <!-- Toolbar -->
+                    <div class="slds-p-horizontal_small slds-p-bottom_small">
+                        <lightning-button
+                            label="New Test Case"
+                            variant="brand"
+                            icon-name="utility:add"
+                            onclick={handleNewTestCase}
+                            class="slds-m-right_x-small"
+                        ></lightning-button>
+                        <template if:true={hasSelectedRows}>
+                            <lightning-button
+                                label="Activate"
+                                variant="success"
+                                icon-name="utility:check"
+                                onclick={handleBulkActivate}
+                                class="slds-m-right_x-small"
+                            ></lightning-button>
+                            <lightning-button
+                                label="Deactivate"
+                                variant="neutral"
+                                icon-name="utility:close"
+                                onclick={handleBulkDeactivate}
+                                class="slds-m-right_x-small"
+                            ></lightning-button>
+                            <lightning-button
+                                label="Delete"
+                                variant="destructive"
+                                icon-name="utility:delete"
+                                onclick={handleBulkDelete}
+                            ></lightning-button>
+                        </template>
+                    </div>
+
+                    <!-- Datatable -->
+                    <template if:true={casesLoading}>
+                        <lightning-spinner alternative-text="Loading test cases"></lightning-spinner>
+                    </template>
+                    <lightning-datatable
+                        key-field="Id"
+                        data={testCases}
+                        columns={columns}
+                        onrowaction={handleRowAction}
+                        onrowselection={handleRowSelection}
+                        onsort={handleSort}
+                        sorted-by={sortedBy}
+                        sorted-direction={sortedDirection}
+                        show-row-number-column
+                        max-row-selection="100"
+                    ></lightning-datatable>
+                </template>
+
+                <template if:false={selectedSuiteId}>
+                    <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak">
+                        Select a suite from the left panel to view test cases.
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+    </lightning-layout>
+
+    <!-- Suite Modal (New/Edit) -->
+    <template if:true={showSuiteModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        onclick={handleCloseSuiteModal}>
+                    <lightning-icon icon-name="utility:close" size="small" variant="inverse"></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <div class="slds-modal__header">
+                    <h1 class="slds-modal__title slds-hyphenate">{suiteModalTitle}</h1>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-input
+                        label="Suite Name"
+                        value={suiteForm.Name}
+                        data-field="Name"
+                        onchange={handleSuiteFormChange}
+                        required
+                    ></lightning-input>
+                    <lightning-input
+                        label="Product Name"
+                        value={suiteForm.Product_Name__c}
+                        data-field="Product_Name__c"
+                        onchange={handleSuiteFormChange}
+                        class="slds-m-top_small"
+                    ></lightning-input>
+                    <lightning-input
+                        label="Version"
+                        value={suiteForm.Version__c}
+                        data-field="Version__c"
+                        onchange={handleSuiteFormChange}
+                        class="slds-m-top_small"
+                    ></lightning-input>
+                    <lightning-textarea
+                        label="Description"
+                        value={suiteForm.Description__c}
+                        data-field="Description__c"
+                        onchange={handleSuiteFormChange}
+                        class="slds-m-top_small"
+                    ></lightning-textarea>
+                    <lightning-input
+                        label="Source Path"
+                        value={suiteForm.Source_Path__c}
+                        data-field="Source_Path__c"
+                        onchange={handleSuiteFormChange}
+                        class="slds-m-top_small"
+                    ></lightning-input>
+                </div>
+                <div class="slds-modal__footer">
+                    <lightning-button
+                        label="Cancel"
+                        onclick={handleCloseSuiteModal}
+                        class="slds-m-right_x-small"
+                    ></lightning-button>
+                    <lightning-button
+                        label="Save"
+                        variant="brand"
+                        onclick={handleSaveSuite}
+                        disabled={isSaving}
+                    ></lightning-button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- Test Case Modal (New/Edit) -->
+    <template if:true={showTestCaseModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        onclick={handleCloseTestCaseModal}>
+                    <lightning-icon icon-name="utility:close" size="small" variant="inverse"></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <div class="slds-modal__header">
+                    <h1 class="slds-modal__title slds-hyphenate">{testCaseModalTitle}</h1>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-layout multiple-rows>
+                        <lightning-layout-item size="12" padding="horizontal-small">
+                            <lightning-input
+                                label="Title"
+                                value={testCaseForm.Title__c}
+                                data-field="Title__c"
+                                onchange={handleTestCaseFormChange}
+                                required
+                            ></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-combobox
+                                label="Test Layer"
+                                value={testCaseForm.Test_Layer__c}
+                                options={testLayerPicklist}
+                                data-field="Test_Layer__c"
+                                onchange={handleTestCaseFormChange}
+                                required
+                            ></lightning-combobox>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-combobox
+                                label="Category"
+                                value={testCaseForm.Category__c}
+                                options={categoryPicklist}
+                                data-field="Category__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-combobox>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-combobox
+                                label="Perspective"
+                                value={testCaseForm.Perspective__c}
+                                options={perspectivePicklist}
+                                data-field="Perspective__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-combobox>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-combobox
+                                label="Priority"
+                                value={testCaseForm.Priority__c}
+                                options={priorityPicklist}
+                                data-field="Priority__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-combobox>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-combobox
+                                label="Assertion Type"
+                                value={testCaseForm.Assertion_Type__c}
+                                options={assertionTypePicklist}
+                                data-field="Assertion_Type__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-combobox>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-input
+                                label="Execution Order"
+                                type="number"
+                                value={testCaseForm.Execution_Order__c}
+                                data-field="Execution_Order__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-textarea
+                                label="Description"
+                                value={testCaseForm.Description__c}
+                                data-field="Description__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-textarea>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-textarea
+                                label="Steps"
+                                value={testCaseForm.Steps__c}
+                                data-field="Steps__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-textarea>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-textarea
+                                label="Expected Result"
+                                value={testCaseForm.Expected_Result__c}
+                                data-field="Expected_Result__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-textarea>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-input
+                                label="Tags"
+                                value={testCaseForm.Tags__c}
+                                data-field="Tags__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="horizontal-small" class="slds-m-top_small">
+                            <lightning-input
+                                label="Target Object"
+                                value={testCaseForm.Target_Object__c}
+                                data-field="Target_Object__c"
+                                onchange={handleTestCaseFormChange}
+                            ></lightning-input>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+                <div class="slds-modal__footer">
+                    <lightning-button
+                        label="Cancel"
+                        onclick={handleCloseTestCaseModal}
+                        class="slds-m-right_x-small"
+                    ></lightning-button>
+                    <lightning-button
+                        label="Save"
+                        variant="brand"
+                        onclick={handleSaveTestCase}
+                        disabled={isSaving}
+                    ></lightning-button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

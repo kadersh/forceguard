@@ -1,0 +1,13 @@
+.suite-card {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-radius: 0.25rem;
+}
+
+.suite-card:hover {
+    background-color: #f3f3f3;
+}
+
+.suite-selected {
+    border-left: 4px solid #0176d3;
+}

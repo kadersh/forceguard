@@ -9,6 +9,7 @@
         <members>Regression_Test_Result__c</members>
         <members>Test_Coverage_Snapshot__c</members>
         <members>Regression_Config__mdt</members>
+        <members>ForceGuard_Test_Complete__e</members>
         <name>CustomObject</name>
     </types>
 

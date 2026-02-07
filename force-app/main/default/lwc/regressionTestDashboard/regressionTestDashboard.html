@@ -1,0 +1,144 @@
+<template>
+    <!-- Loading Spinner -->
+    <template lwc:if={isLoading}>
+        <lightning-spinner alternative-text="Loading dashboard" size="medium"></lightning-spinner>
+    </template>
+
+    <!-- Error Banner -->
+    <template lwc:if={error}>
+        <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+            <span class="slds-assistive-text">error</span>
+            <h2>{error}</h2>
+        </div>
+    </template>
+
+    <!-- Summary Cards -->
+    <div class="slds-grid slds-gutters slds-m-bottom_medium">
+        <div class="slds-col slds-size_1-of-4">
+            <lightning-card title="Pass Rate" icon-name="utility:success">
+                <div class="slds-p-around_medium slds-text-align_center">
+                    <span class="slds-text-heading_large">{displayPassRate}</span>
+                </div>
+            </lightning-card>
+        </div>
+        <div class="slds-col slds-size_1-of-4">
+            <lightning-card title="Total Tests" icon-name="utility:checkin">
+                <div class="slds-p-around_medium slds-text-align_center">
+                    <span class="slds-text-heading_large">{displayTotalTests}</span>
+                </div>
+            </lightning-card>
+        </div>
+        <div class="slds-col slds-size_1-of-4">
+            <lightning-card title="Failures" icon-name="utility:error">
+                <div class="slds-p-around_medium slds-text-align_center">
+                    <span class="slds-text-heading_large">{displayFailures}</span>
+                </div>
+            </lightning-card>
+        </div>
+        <div class="slds-col slds-size_1-of-4">
+            <lightning-card title="Suites" icon-name="utility:layers">
+                <div class="slds-p-around_medium slds-text-align_center">
+                    <span class="slds-text-heading_large">{displaySuites}</span>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+
+    <!-- Suite List -->
+    <lightning-card title="Test Suites" icon-name="utility:table">
+        <div slot="actions">
+            <lightning-button
+                label="Schedule Runs"
+                icon-name="utility:clock"
+                onclick={handleOpenScheduleModal}
+            ></lightning-button>
+        </div>
+        <template lwc:if={hasSuites}>
+            <lightning-datatable
+                key-field="suiteId"
+                data={suiteData}
+                columns={suiteColumns}
+                onrowaction={handleSuiteRowAction}
+                hide-checkbox-column
+            ></lightning-datatable>
+        </template>
+        <template lwc:else>
+            <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak">
+                No active test suites found.
+            </div>
+        </template>
+    </lightning-card>
+
+    <!-- Recent Runs -->
+    <lightning-card title="Recent Runs" icon-name="utility:date_time" class="slds-m-top_medium">
+        <template lwc:if={hasRuns}>
+            <lightning-datatable
+                key-field="Id"
+                data={runData}
+                columns={runColumns}
+                hide-checkbox-column
+                sorted-by={runSortedBy}
+                sorted-direction={runSortedDirection}
+                onsort={handleRunSort}
+            ></lightning-datatable>
+        </template>
+        <template lwc:else>
+            <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak">
+                No recent test runs found.
+            </div>
+        </template>
+    </lightning-card>
+
+    <!-- Running Job Progress -->
+    <template lwc:if={isRunning}>
+        <div class="slds-m-top_medium">
+            <lightning-card title="Running Test Suite" icon-name="utility:spinner">
+                <div class="slds-p-around_medium">
+                    <lightning-progress-bar value={jobProgress} size="large"></lightning-progress-bar>
+                    <p class="slds-m-top_small slds-text-align_center">
+                        Status: {jobStatus} | Progress: {jobProgress}%
+                    </p>
+                </div>
+            </lightning-card>
+        </div>
+    </template>
+
+    <!-- Schedule Modal -->
+    <template lwc:if={showScheduleModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        alternative-text="Close"
+                        class="slds-modal__close"
+                        onclick={handleCloseScheduleModal}
+                    ></lightning-button-icon>
+                    <h2 class="slds-modal__title slds-hyphenate">Schedule Automated Runs</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-combobox
+                        label="Frequency"
+                        value={selectedFrequency}
+                        placeholder="Select frequency"
+                        options={frequencyOptions}
+                        onchange={handleFrequencyChange}
+                    ></lightning-combobox>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button
+                        label="Cancel"
+                        onclick={handleCloseScheduleModal}
+                    ></lightning-button>
+                    <lightning-button
+                        label="Schedule"
+                        variant="brand"
+                        onclick={handleSchedule}
+                        disabled={isScheduleDisabled}
+                    ></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

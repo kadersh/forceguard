@@ -215,6 +215,17 @@ If the system crashes, read this file first, then:
   - Fixed SchedulerTest blanking Steps__c for Data Scenario layer
   - Result: 76/76 tests pass (100% pass rate)
 
+- [2026-02-07] EXECUTABLE TEST SCRIPTS PLAN: APPROVED
+  - Plan: Enhance RegressionTestExecutor with Callable support + Flow/LWC/PermSet deployment checks
+  - Plan: Rewrite AuditTestCaseSeeder with machine-parseable Steps__c for all 63 test cases
+  - Plan: Create 6 Callable scenario classes for E2E audit testing
+  - Implementation: Pending (separate session)
+
+## Next Steps
+
+- Implement "Make Test Scripts Executable" plan
+- Then Phase 5 LWC Dashboard
+
 ## Recovery Instructions (Updated)
 
 If the system crashes, read this file first, then:

@@ -1,0 +1,141 @@
+<template>
+    <!-- Filter Bar -->
+    <lightning-card title="Test Run History" icon-name="standard:record">
+        <div slot="actions">
+            <lightning-button
+                label="Refresh"
+                icon-name="utility:refresh"
+                onclick={handleRefresh}
+                class="slds-m-left_x-small"
+            ></lightning-button>
+        </div>
+
+        <div class="slds-p-horizontal_medium slds-p-bottom_small">
+            <!-- Filters -->
+            <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_small">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                    <lightning-combobox
+                        label="Test Suite"
+                        value={selectedSuiteId}
+                        options={suiteOptions}
+                        onchange={handleSuiteChange}
+                        placeholder="All Suites"
+                    ></lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                    <lightning-combobox
+                        label="Status"
+                        value={selectedStatus}
+                        options={statusOptions}
+                        onchange={handleStatusChange}
+                    ></lightning-combobox>
+                </div>
+            </div>
+
+            <!-- Runs Datatable -->
+            <template if:true={hasRuns}>
+                <lightning-datatable
+                    key-field="Id"
+                    data={runs}
+                    columns={columns}
+                    onrowaction={handleRowAction}
+                    hide-checkbox-column
+                    sorted-by={sortedBy}
+                    sorted-direction={sortedDirection}
+                ></lightning-datatable>
+
+                <!-- Pagination -->
+                <div class="slds-grid slds-grid_align-center slds-m-top_small">
+                    <lightning-button
+                        label="Previous"
+                        icon-name="utility:chevronleft"
+                        onclick={handlePrevious}
+                        disabled={isPrevDisabled}
+                        class="slds-m-right_x-small"
+                    ></lightning-button>
+                    <span class="slds-align-middle slds-p-horizontal_small">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <lightning-button
+                        label="Next"
+                        icon-name="utility:chevronright"
+                        icon-position="right"
+                        onclick={handleNext}
+                        disabled={isNextDisabled}
+                    ></lightning-button>
+                </div>
+            </template>
+
+            <template if:false={hasRuns}>
+                <div class="slds-illustration slds-illustration_small slds-p-vertical_medium">
+                    <p class="slds-text-body_regular slds-text-color_weak slds-text-align_center">
+                        No test runs found matching the current filters.
+                    </p>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+
+    <!-- Run Detail Panel -->
+    <template if:true={selectedRunId}>
+        <lightning-card title={detailTitle} icon-name="standard:insights" class="slds-m-top_small">
+            <lightning-button
+                slot="actions"
+                label="Close"
+                icon-name="utility:close"
+                onclick={handleCloseDetail}
+            ></lightning-button>
+
+            <template if:true={isLoadingDetail}>
+                <lightning-spinner alternative-text="Loading run detail" size="medium"></lightning-spinner>
+            </template>
+
+            <template if:false={isLoadingDetail}>
+                <template if:true={runDetail}>
+                    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <!-- Run Summary -->
+                        <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_medium">
+                            <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                                <div class="slds-text-title_caps slds-m-bottom_xx-small">Status</div>
+                                <lightning-badge label={runDetail.run.Status__c} class={statusBadgeClass}></lightning-badge>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                                <div class="slds-text-title_caps slds-m-bottom_xx-small">Pass Rate</div>
+                                <span class="slds-text-heading_small">{formattedPassRate}</span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                                <div class="slds-text-title_caps slds-m-bottom_xx-small">Failures</div>
+                                <span class="slds-text-heading_small">{runDetail.totalFailures}</span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                                <div class="slds-text-title_caps slds-m-bottom_xx-small">Regressions</div>
+                                <span class="slds-text-heading_small">{runDetail.regressionCount}</span>
+                            </div>
+                        </div>
+
+                        <!-- Layer Breakdown Cards -->
+                        <div class="slds-text-heading_small slds-m-bottom_small">Layer Breakdown</div>
+                        <div class="slds-grid slds-gutters slds-wrap">
+                            <template for:each={runDetail.layerSummaries} for:item="layer">
+                                <div key={layer.layerName} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4 slds-m-bottom_small">
+                                    <div class="slds-box slds-theme_shade">
+                                        <div class="slds-text-title_caps slds-m-bottom_xx-small">{layer.layerName}</div>
+                                        <lightning-badge label={layer.status} class={layer.badgeClass}></lightning-badge>
+                                        <div class="slds-m-top_x-small">
+                                            <lightning-progress-bar value={layer.passRate} size="small"></lightning-progress-bar>
+                                        </div>
+                                        <div class="slds-grid slds-m-top_xx-small slds-text-body_small">
+                                            <span class="slds-col">Passed: {layer.passed}</span>
+                                            <span class="slds-col">Failed: {layer.failed}</span>
+                                            <span class="slds-col">Skipped: {layer.skipped}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </lightning-card>
+    </template>
+</template>

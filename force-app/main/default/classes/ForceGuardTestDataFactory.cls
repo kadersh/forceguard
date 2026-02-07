@@ -24,6 +24,10 @@ public class ForceGuardTestDataFactory {
             UserName = 'forceguard.test' + DateTime.now().getTime() + '@test.com'
         );
         insert testUser;
+
+        PermissionSet ps = [SELECT Id FROM PermissionSet WHERE Name = 'ForceGuard_User' LIMIT 1];
+        insert new PermissionSetAssignment(AssigneeId = testUser.Id, PermissionSetId = ps.Id);
+
         return testUser;
     }
 
