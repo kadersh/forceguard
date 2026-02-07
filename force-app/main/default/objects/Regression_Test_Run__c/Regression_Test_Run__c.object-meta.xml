@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Represents a single execution of a regression test suite, tracking overall results and layer-by-layer status.</description>
+    <enableActivities>true</enableActivities>
+    <enableReports>true</enableReports>
+    <label>Regression Test Run</label>
+    <nameField>
+        <displayFormat>RUN-{0000}</displayFormat>
+        <label>Run Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Regression Test Runs</pluralLabel>
+    <sharingModel>ReadWrite</sharingModel>
+</CustomObject>

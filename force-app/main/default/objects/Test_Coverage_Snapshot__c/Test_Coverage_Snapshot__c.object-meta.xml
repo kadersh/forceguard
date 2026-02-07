@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableReports>true</enableReports>
+    <label>Test Coverage Snapshot</label>
+    <nameField>
+        <displayFormat>COV-{0000}</displayFormat>
+        <label>Snapshot Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Test Coverage Snapshots</pluralLabel>
+    <sharingModel>ReadWrite</sharingModel>
+</CustomObject>

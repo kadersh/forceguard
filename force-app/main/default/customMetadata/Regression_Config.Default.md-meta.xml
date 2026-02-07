@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Default</label>
+    <protected>false</protected>
+    <values>
+        <field>Coverage_Threshold__c</field>
+        <value xsi:type="xsd:double">85.0</value>
+    </values>
+    <values>
+        <field>Flaky_Threshold__c</field>
+        <value xsi:type="xsd:double">3.0</value>
+    </values>
+    <values>
+        <field>Enabled_Layers__c</field>
+        <value xsi:type="xsd:string">1;2;3;4</value>
+    </values>
+    <values>
+        <field>Auto_Ticket_Enabled__c</field>
+        <value xsi:type="xsd:boolean">false</value>
+    </values>
+    <values>
+        <field>Notification_Trigger__c</field>
+        <value xsi:type="xsd:string">Failures Only</value>
+    </values>
+</CustomMetadata>
