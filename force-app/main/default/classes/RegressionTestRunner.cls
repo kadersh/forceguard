@@ -66,11 +66,11 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
             Triggered_By__c = triggeredBy,
             Run_By__c = UserInfo.getUserId()
         );
-        insert as user run;
+        insert run;
         this.runId = run.Id;
 
         // Mark suite as Running
-        update as user new Regression_Test_Suite__c(
+        update new Regression_Test_Suite__c(
             Id = suiteId,
             Last_Run_Status__c = STATUS_RUNNING,
             Last_Run_Date__c = DateTime.now()
@@ -82,7 +82,7 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
      */
     public Database.QueryLocator start(Database.BatchableContext bc) {
         // Store the batch job ID on the Run record for LWC polling
-        update as user new Regression_Test_Run__c(
+        update new Regression_Test_Run__c(
             Id = runId,
             Batch_Job_Id__c = bc.getJobId()
         );
@@ -90,11 +90,11 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
         return Database.getQueryLocator([
             SELECT Id, Title__c, Test_Layer__c, Category__c, Steps__c,
                    Expected_Result__c, Assertion_Type__c, Execution_Order__c,
-                   Target_Object__c, Related_Metadata__c, Tags__c
+                   Target_Object__c, Related_Metadata__c, Tags__c, Last_Result_Status__c
             FROM Regression_Test_Case__c
             WHERE Test_Suite__c = :suiteId
               AND Is_Active__c = true
-            WITH USER_MODE
+            WITH SYSTEM_MODE
             ORDER BY Test_Layer__c, Execution_Order__c
         ]);
     }
@@ -170,7 +170,7 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
 
         // Bulk insert all results
         if (!allResults.isEmpty()) {
-            insert as user allResults;
+            insert allResults;
         }
     }
 
@@ -210,11 +210,11 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
             Layer_4_Status__c = layerStatuses.get(LAYER_STATIC_ANALYSIS),
             Error_Summary__c = errorSummary
         );
-        update as user run;
+        update run;
 
         // Update Suite with last run info
         String suiteStatus = (totalFailed > 0) ? STATUS_FAILED : STATUS_PASSED;
-        update as user new Regression_Test_Suite__c(
+        update new Regression_Test_Suite__c(
             Id = suiteId,
             Last_Run_Date__c = DateTime.now(),
             Last_Run_Status__c = suiteStatus

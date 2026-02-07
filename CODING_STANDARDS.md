@@ -4,6 +4,108 @@ Standards for developers building ForceGuard. Follow these without exception.
 
 ---
 
+## No Flows Policy (IP Protection for Managed Packages)
+
+**ForceGuard is a managed package. ForceGuard contains NO Flows. All automation is implemented in Apex.**
+
+### Why?
+
+Flows in managed packages are distributed as transparent XML metadata. Subscribers can view your entire automation logic, including:
+- Business rules and validation criteria
+- Formula calculations
+- Decision trees and process flow
+- Field mappings and transformations
+
+Apex classes are compiled into bytecode before distribution. Subscribers cannot view your source code. For an AppExchange product, this is a critical IP protection strategy.
+
+### Implementation Rules
+
+| Automation Type | ❌ Avoid (Transparent) | ✅ Use Instead (Protected) |
+|-----------------|------------------------|---------------------------|
+| Record-triggered automation | Record-Triggered Flow | Apex Trigger + Handler Class |
+| Scheduled automation | Scheduled Flow | Schedulable Apex |
+| Screen-based UI | Screen Flow | Lightning Web Component |
+| Reusable actions | Autolaunched Flow | @InvocableMethod Apex |
+| Bulk processing | Flow Loop + DML | Batch Apex |
+
+### Patterns
+
+**Instead of Record-Triggered Flow:**
+```apex
+// Trigger (minimal logic)
+trigger RegressionTestRunTrigger on Regression_Test_Run__c (after insert, after update) {
+    RegressionTestRunHandler.handle(Trigger.new, Trigger.oldMap, Trigger.operationType);
+}
+
+// Handler (all business logic)
+public with sharing class RegressionTestRunHandler {
+    public static void handle(
+        List<Regression_Test_Run__c> newRecords,
+        Map<Id, Regression_Test_Run__c> oldMap,
+        System.TriggerOperation operation
+    ) {
+        if (operation == System.TriggerOperation.AFTER_INSERT) {
+            handleAfterInsert(newRecords);
+        }
+        // additional operations
+    }
+
+    private static void handleAfterInsert(List<Regression_Test_Run__c> runs) {
+        // business logic here
+    }
+}
+```
+
+**Instead of Scheduled Flow:**
+```apex
+public class RegressionTestScheduler implements Schedulable {
+    public void execute(SchedulableContext ctx) {
+        // Launch batch or queueable
+        Database.executeBatch(new RegressionTestRunner(), 10);
+    }
+}
+
+// Schedule via Setup → Scheduled Jobs or Anonymous Apex:
+// System.schedule('Daily Regression Tests', '0 0 2 * * ?', new RegressionTestScheduler());
+```
+
+**Instead of Screen Flow:**
+```javascript
+// Use LWC with imperative Apex calls
+import { LightningElement } from 'lwc';
+import runTests from '@salesforce/apex/RegressionTestController.runTests';
+
+export default class TestSuiteManager extends LightningElement {
+    async handleRunTests() {
+        await runTests({ suiteId: this.selectedSuiteId });
+    }
+}
+```
+
+**For extensibility (invocable actions):**
+```apex
+// @InvocableMethod allows admins to call this from Process Builder or Flow
+public class RegressionTestInvocable {
+    @InvocableMethod(label='Run Regression Test Suite')
+    public static void runSuite(List<RunRequest> requests) {
+        for (RunRequest req : requests) {
+            Database.executeBatch(new RegressionTestRunner(req.suiteId), 10);
+        }
+    }
+
+    public class RunRequest {
+        @InvocableVariable(required=true)
+        public Id suiteId;
+    }
+}
+```
+
+### Exception
+
+If a feature is declarative by nature (e.g., a "Test Builder" tool that generates flows), that's acceptable. The rule applies to **ForceGuard's core automation**, not to metadata that ForceGuard generates or tests.
+
+---
+
 ## Naming Conventions
 
 ### Apex Classes

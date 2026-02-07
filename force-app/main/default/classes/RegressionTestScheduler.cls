@@ -21,7 +21,6 @@ public with sharing class RegressionTestScheduler implements Schedulable {
             SELECT Id, Product_Name__c
             FROM Regression_Test_Suite__c
             WHERE Is_Active__c = true
-            WITH USER_MODE
         ];
 
         if (suites.isEmpty()) {
@@ -102,7 +101,6 @@ public with sharing class RegressionTestScheduler implements Schedulable {
             SELECT Id
             FROM CronTrigger
             WHERE CronJobDetail.Name LIKE :JOB_PREFIX + '%'
-            WITH USER_MODE
         ];
         for (CronTrigger job : jobs) {
             System.abortJob(job.Id);
@@ -118,7 +116,6 @@ public with sharing class RegressionTestScheduler implements Schedulable {
             SELECT COUNT()
             FROM CronTrigger
             WHERE CronJobDetail.Name LIKE :JOB_PREFIX + '%'
-            WITH USER_MODE
         ];
         return jobCount > 0;
     }

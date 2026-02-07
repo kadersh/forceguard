@@ -22,6 +22,7 @@ Blocking layers halt the pipeline on failure -- there is no point running expens
 - **LWC Dashboard**: Manage suites, execute runs, view results
 - **Auto-Ticket Creation**: Creates tasks/cases on test failures
 - **Scheduled Execution**: Cron-based automated regression runs
+- **100% Apex Automation**: No Flows in ForceGuard's codebase (IP protection for managed package). All automation is implemented in Apex triggers, batch classes, and queueables.
 
 ## First Target
 
@@ -38,7 +39,6 @@ ForceGuard/
     lwc/              # Lightning Web Components (Dashboard, Suite Manager)
     objects/          # Custom object definitions
     customMetadata/   # Regression_Config__mdt records
-    flows/            # Record-triggered and utility flows
     permissionsets/   # ForceGuard Admin, User, Viewer
     tabs/             # Custom tabs
     layouts/          # Page layouts
@@ -52,7 +52,8 @@ ForceGuard/
 ## Prerequisites
 
 - Salesforce CLI (`sf`) v2+
-- A Salesforce org (Developer Edition or Scratch Org)
+- A Salesforce Scratch Org (recommended) or Developer Edition org
+- A DevHub org for scratch org creation
 - Node.js 18+ (for LWC development)
 
 ## Getting Started

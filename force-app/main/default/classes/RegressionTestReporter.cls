@@ -52,7 +52,6 @@ public with sharing class RegressionTestReporter {
                    Layer_1_Status__c, Layer_2_Status__c, Layer_3_Status__c, Layer_4_Status__c
             FROM Regression_Test_Run__c
             WHERE Id = :testRunId
-            WITH USER_MODE
         ];
 
         summary.runId = run.Id;
@@ -74,7 +73,6 @@ public with sharing class RegressionTestReporter {
             SELECT Layer__c layer, Status__c status, COUNT(Id) cnt
             FROM Regression_Test_Result__c
             WHERE Test_Run__c = :testRunId
-            WITH USER_MODE
             GROUP BY Layer__c, Status__c
         ]) {
             String layerName = (String) ar.get('layer');
@@ -108,7 +106,6 @@ public with sharing class RegressionTestReporter {
             SELECT Test_Case__r.Title__c, Layer__c, Error_Message__c, Is_Regression__c
             FROM Regression_Test_Result__c
             WHERE Test_Run__c = :testRunId AND (Status__c = 'Failed' OR Status__c = 'Error')
-            WITH USER_MODE
             ORDER BY Layer__c, Test_Case__r.Title__c
         ]) {
             FailureDetail fd = new FailureDetail();
@@ -133,7 +130,6 @@ public with sharing class RegressionTestReporter {
             SELECT Test_Suite__c
             FROM Regression_Test_Run__c
             WHERE Id = :testRunId
-            WITH USER_MODE
         ];
 
         // Find the previous run for this suite (most recent before current)
@@ -143,7 +139,6 @@ public with sharing class RegressionTestReporter {
             WHERE Test_Suite__c = :currentRun.Test_Suite__c
               AND Id != :testRunId
               AND Status__c IN ('Completed', 'Failed')
-            WITH USER_MODE
             ORDER BY Run_Date__c DESC
             LIMIT 1
         ];
@@ -160,7 +155,6 @@ public with sharing class RegressionTestReporter {
             SELECT Test_Case__c, Status__c
             FROM Regression_Test_Result__c
             WHERE Test_Run__c = :previousRunId
-            WITH USER_MODE
         ]) {
             previousStatusByCase.put(prevResult.Test_Case__c, prevResult.Status__c);
         }
@@ -173,7 +167,6 @@ public with sharing class RegressionTestReporter {
             SELECT Id, Test_Case__c, Status__c
             FROM Regression_Test_Result__c
             WHERE Test_Run__c = :testRunId AND (Status__c = 'Failed' OR Status__c = 'Error')
-            WITH USER_MODE
         ]) {
             String previousStatus = previousStatusByCase.get(currentResult.Test_Case__c);
             if (previousStatus == 'Passed') {
@@ -185,22 +178,13 @@ public with sharing class RegressionTestReporter {
         }
 
         if (!toUpdate.isEmpty()) {
-            SObjectAccessDecision decision = Security.stripInaccessible(
-                AccessType.UPDATABLE, toUpdate
-            );
-            update as user decision.getRecords();
+            update toUpdate;
 
             // Update regression count on the run
-            List<Regression_Test_Run__c> runUpdate = new List<Regression_Test_Run__c>{
-                new Regression_Test_Run__c(
-                    Id = testRunId,
-                    Regression_Count__c = regressions.size()
-                )
-            };
-            SObjectAccessDecision runDecision = Security.stripInaccessible(
-                AccessType.UPDATABLE, runUpdate
+            update new Regression_Test_Run__c(
+                Id = testRunId,
+                Regression_Count__c = regressions.size()
             );
-            update as user runDecision.getRecords();
         }
 
         return regressions;
@@ -219,7 +203,6 @@ public with sharing class RegressionTestReporter {
                    Status__c, Error_Message__c, Duration_Ms__c, Is_Regression__c
             FROM Regression_Test_Result__c
             WHERE Test_Run__c = :testRunId
-            WITH USER_MODE
             ORDER BY Layer__c, Test_Case__r.Title__c
         ]) {
             csv += '"' + escapeCsv(result.Test_Case__r.Title__c) + '",';
@@ -244,20 +227,17 @@ public with sharing class RegressionTestReporter {
             SELECT Test_Suite__c, Code_Coverage__c
             FROM Regression_Test_Run__c
             WHERE Id = :testRunId
-            WITH USER_MODE
         ];
 
         Integer totalCases = [
             SELECT COUNT()
             FROM Regression_Test_Case__c
             WHERE Test_Suite__c = :run.Test_Suite__c AND Is_Active__c = true
-            WITH USER_MODE
         ];
         Integer testedCases = [
             SELECT COUNT()
             FROM Regression_Test_Result__c
             WHERE Test_Run__c = :testRunId AND Status__c != 'Skipped'
-            WITH USER_MODE
         ];
 
         Test_Coverage_Snapshot__c snapshot = new Test_Coverage_Snapshot__c(
@@ -268,13 +248,7 @@ public with sharing class RegressionTestReporter {
             Tested_Metadata_Items__c = testedCases
         );
 
-        SObjectAccessDecision decision = Security.stripInaccessible(
-            AccessType.CREATABLE, new List<Test_Coverage_Snapshot__c>{ snapshot }
-        );
-        insert as user decision.getRecords();
-
-        // Return the inserted record with its Id
-        snapshot.Id = decision.getRecords()[0].Id;
+        insert snapshot;
         return snapshot;
     }
 
@@ -299,7 +273,6 @@ public with sharing class RegressionTestReporter {
                 FROM Regression_Test_Run__c
                 WHERE Status__c IN ('Completed', 'Failed')
                   AND Test_Suite__c = :suiteId
-                WITH USER_MODE
                 ORDER BY Run_Date__c DESC
                 LIMIT :runCount
             ];
@@ -308,7 +281,6 @@ public with sharing class RegressionTestReporter {
                 SELECT Id, Name, Run_Date__c, Pass_Rate__c, Total_Tests__c, Failed__c
                 FROM Regression_Test_Run__c
                 WHERE Status__c IN ('Completed', 'Failed')
-                WITH USER_MODE
                 ORDER BY Run_Date__c DESC
                 LIMIT :runCount
             ];

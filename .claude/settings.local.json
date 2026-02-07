@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(gh repo create:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git clone:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(curl -s -u \"apikey:911a6c5e109a59a6086163bdb2b498f75e2591a36420ac54b5b6615395479277\" -X POST \"http://192.168.1.249:5683/api/v3/projects\" -H \"Content-Type: application/json\" -d '{\"\"name\"\":\"\"Regression Testing Framework\"\",\"\"identifier\"\":\"\"regression-testing-framework\"\",\"\"description\"\":{\"\"format\"\":\"\"markdown\"\",\"\"raw\"\":\"\"Salesforce-native regression testing framework. Installable product for automated test execution, result tracking, and failure reporting. Starting with Audit \\(SOX/IPE\\) product coverage.\"\"},\"\"public\"\":true}')",
+      "Bash(curl:*)",
+      "Bash(bash:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}

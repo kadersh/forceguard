@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression Testing Framework - Product Vision</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+
+        /* Header */
+        .hero { background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%); padding: 60px 40px; text-align: center; border-bottom: 1px solid #334155; }
+        .hero h1 { font-size: 3em; background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+        .hero .subtitle { font-size: 1.3em; color: #94a3b8; max-width: 700px; margin: 0 auto 30px; }
+        .hero-badges { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .badge { padding: 8px 20px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-pink { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+        .badge-green { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        /* Section */
+        .section { margin-bottom: 60px; }
+        .section-title { font-size: 1.8em; color: #f1f5f9; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+        .section-title .icon { font-size: 1.2em; }
+        .section-desc { color: #94a3b8; margin-bottom: 30px; font-size: 1.05em; }
+
+        /* Problem/Solution */
+        .problem-solution { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+        .problem-card, .solution-card { padding: 30px; border-radius: 16px; }
+        .problem-card { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .problem-card h3 { color: #f87171; margin-bottom: 16px; font-size: 1.3em; }
+        .solution-card { background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); }
+        .solution-card h3 { color: #4ade80; margin-bottom: 16px; font-size: 1.3em; }
+        .problem-card li, .solution-card li { margin-bottom: 10px; padding-left: 8px; }
+
+        /* Architecture */
+        .arch-flow { display: flex; align-items: center; justify-content: center; gap: 0; margin: 30px 0; flex-wrap: wrap; }
+        .arch-layer { padding: 20px 28px; border-radius: 12px; text-align: center; min-width: 200px; position: relative; }
+        .arch-arrow { font-size: 2em; color: #475569; padding: 0 8px; }
+        .layer-1 { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); }
+        .layer-2 { background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.3); }
+        .layer-3 { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .layer-4 { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .layer-label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .layer-1 .layer-label { color: #60a5fa; }
+        .layer-2 .layer-label { color: #a78bfa; }
+        .layer-3 .layer-label { color: #fbbf24; }
+        .layer-4 .layer-label { color: #4ade80; }
+        .layer-name { font-weight: 700; font-size: 1.05em; margin-bottom: 4px; }
+        .layer-time { font-size: 0.85em; color: #64748b; }
+        .layer-tag { display: inline-block; font-size: 0.7em; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+        .tag-blocking { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .tag-verify { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .tag-quality { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+
+        /* Products Grid */
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .product-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 28px; transition: border-color 0.3s; }
+        .product-card:hover { border-color: #60a5fa; }
+        .product-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .product-name { font-size: 1.15em; font-weight: 700; }
+        .product-type { font-size: 0.75em; padding: 4px 10px; border-radius: 12px; }
+        .type-cli { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .type-sf { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .type-internal { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .product-desc { color: #94a3b8; font-size: 0.9em; margin-bottom: 16px; }
+        .product-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat { font-size: 0.8em; color: #64748b; }
+        .stat strong { color: #e2e8f0; }
+
+        /* Perspectives */
+        .perspectives { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+        .perspective-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; }
+        .perspective-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .perspective-name { font-weight: 700; font-size: 1em; margin-bottom: 8px; }
+        .perspective-focus { font-size: 0.8em; color: #94a3b8; }
+
+        /* Test Scenarios Table */
+        .scenarios-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #1e293b; border-radius: 12px; overflow: hidden; border: 1px solid #334155; }
+        .scenarios-table th { background: #0f172a; padding: 14px 16px; text-align: left; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid #334155; }
+        .scenarios-table td { padding: 12px 16px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); font-size: 0.9em; }
+        .scenarios-table tr:last-child td { border-bottom: none; }
+        .scenarios-table tr:hover td { background: rgba(59, 130, 246, 0.05); }
+        .priority-p0 { color: #f87171; font-weight: 700; }
+        .priority-p1 { color: #fbbf24; font-weight: 600; }
+        .priority-p2 { color: #60a5fa; }
+        .cat-tag { display: inline-block; font-size: 0.75em; padding: 2px 8px; border-radius: 8px; }
+        .cat-func { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .cat-edge { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .cat-bulk { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .cat-sec { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .cat-regr { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+        .cat-uat { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+        .cat-int { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+        .cat-deploy { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+        /* Workflow */
+        .workflow { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 30px; }
+        .workflow-step { display: flex; align-items: flex-start; gap: 20px; padding: 16px 0; border-bottom: 1px solid rgba(51, 65, 85, 0.5); }
+        .workflow-step:last-child { border-bottom: none; }
+        .step-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9em; flex-shrink: 0; }
+        .step-1 { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .step-2 { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .step-3 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .step-4 { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .step-5 { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        .step-6 { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+        .step-content h4 { font-size: 1.05em; margin-bottom: 4px; }
+        .step-content p { color: #94a3b8; font-size: 0.9em; }
+        .step-agent { font-size: 0.8em; padding: 2px 10px; border-radius: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); margin-top: 6px; display: inline-block; }
+
+        /* Growth */
+        .growth-timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .growth-phase { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 28px; position: relative; overflow: hidden; }
+        .growth-phase::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .phase-1::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .phase-2::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .phase-3::before { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .phase-label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .phase-1 .phase-label { color: #60a5fa; }
+        .phase-2 .phase-label { color: #a78bfa; }
+        .phase-3 .phase-label { color: #4ade80; }
+        .phase-title { font-size: 1.3em; font-weight: 700; margin-bottom: 6px; }
+        .phase-time { color: #64748b; font-size: 0.85em; margin-bottom: 14px; }
+        .phase-items { list-style: none; }
+        .phase-items li { padding: 6px 0; color: #cbd5e1; font-size: 0.9em; padding-left: 20px; position: relative; }
+        .phase-items li::before { content: ''; position: absolute; left: 0; top: 14px; width: 8px; height: 8px; border-radius: 50%; }
+        .phase-1 .phase-items li::before { background: #3b82f6; }
+        .phase-2 .phase-items li::before { background: #8b5cf6; }
+        .phase-3 .phase-items li::before { background: #22c55e; }
+
+        /* OpenProject */
+        .op-structure { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 30px; font-family: 'Courier New', monospace; font-size: 0.9em; }
+        .op-epic { color: #f472b6; font-weight: 700; }
+        .op-phase { color: #a78bfa; padding-left: 24px; }
+        .op-task { color: #60a5fa; padding-left: 48px; }
+        .op-auto { color: #64748b; font-style: italic; }
+        .op-line { padding: 4px 0; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 40px; color: #475569; font-size: 0.85em; border-top: 1px solid #1e293b; }
+
+        /* Report Preview */
+        .report-preview { background: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden; }
+        .report-header { background: #0f172a; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .report-title { font-weight: 600; }
+        .report-status { padding: 4px 12px; border-radius: 8px; font-size: 0.85em; font-weight: 600; }
+        .status-pass { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+        .status-fail { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .report-body { padding: 24px; }
+        .report-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(51, 65, 85, 0.3); }
+        .report-row:last-child { border-bottom: none; }
+        .report-layer { color: #e2e8f0; }
+        .report-result { font-weight: 600; }
+        .pass { color: #4ade80; }
+        .fail { color: #f87171; }
+        .skip { color: #64748b; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2em; }
+            .problem-solution, .products-grid, .growth-timeline { grid-template-columns: 1fr; }
+            .perspectives { grid-template-columns: repeat(2, 1fr); }
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+            .scenarios-table { font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Regression Testing Framework</h1>
+    <p class="subtitle">Automated multi-perspective testing for Salesforce products. Agent-executed. Failure-tracked. Quality-guaranteed.</p>
+    <div class="hero-badges">
+        <span class="badge badge-blue">4 Products</span>
+        <span class="badge badge-purple">5 Perspectives</span>
+        <span class="badge badge-pink">40+ Test Scenarios</span>
+        <span class="badge badge-green">Auto-Ticketing</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- PROBLEM / SOLUTION -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">1.</span> The Problem & Solution</h2>
+        <div class="problem-solution">
+            <div class="problem-card">
+                <h3>Without This Framework</h3>
+                <ul style="list-style: none;">
+                    <li>No systematic way to verify products work after updates</li>
+                    <li>Past testing found ALL 3 products had blocking deployment failures</li>
+                    <li>Bug fixes break existing features (undetected regressions)</li>
+                    <li>Manual testing takes 20+ hours per release</li>
+                    <li>No audit trail of what was tested and when</li>
+                    <li>Failures discovered by clients, not by us</li>
+                </ul>
+            </div>
+            <div class="solution-card">
+                <h3>With This Framework</h3>
+                <ul style="list-style: none;">
+                    <li>Every product has defined test scenarios (YAML files)</li>
+                    <li>Claude agents execute tests automatically after changes</li>
+                    <li>Failures auto-create OpenProject tickets with context</li>
+                    <li>Testing drops from 20 hours to under 15 minutes</li>
+                    <li>Full history of every test run with Markdown reports</li>
+                    <li>Multi-perspective coverage: Dev, Admin, PM, Designer, Client</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ARCHITECTURE -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">2.</span> 4-Layer Testing Architecture</h2>
+        <p class="section-desc">Tests run in 4 layers. Blocking layers must pass before the next layer executes.</p>
+        <div class="arch-flow">
+            <div class="arch-layer layer-1">
+                <div class="layer-label">Layer 1</div>
+                <div class="layer-name">Deploy Validate</div>
+                <div class="layer-time">~30-60 seconds</div>
+                <div class="layer-tag tag-blocking">BLOCKING</div>
+            </div>
+            <div class="arch-arrow">&rarr;</div>
+            <div class="arch-layer layer-2">
+                <div class="layer-label">Layer 2</div>
+                <div class="layer-name">Apex Tests</div>
+                <div class="layer-time">~2-5 minutes</div>
+                <div class="layer-tag tag-blocking">BLOCKING</div>
+            </div>
+            <div class="arch-arrow">&rarr;</div>
+            <div class="arch-layer layer-3">
+                <div class="layer-label">Layer 3</div>
+                <div class="layer-name">Data Scenarios</div>
+                <div class="layer-time">~5-15 minutes</div>
+                <div class="layer-tag tag-verify">VERIFICATION</div>
+            </div>
+            <div class="arch-arrow">&rarr;</div>
+            <div class="arch-layer layer-4">
+                <div class="layer-label">Layer 4</div>
+                <div class="layer-name">Static Analysis</div>
+                <div class="layer-time">~1-2 minutes</div>
+                <div class="layer-tag tag-quality">QUALITY GATE</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">3.</span> Products Under Test</h2>
+        <p class="section-desc">4 Salesforce products with test suites covering all features.</p>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-header">
+                    <span class="product-name">Flow Test Generator</span>
+                    <span class="product-type type-cli">TypeScript CLI</span>
+                </div>
+                <p class="product-desc">Generates Apex test classes from Salesforce Flow XML. Parser, Analyzer, Generator pipeline with read-only field detection.</p>
+                <div class="product-stats">
+                    <span class="stat"><strong>10</strong> scenarios</span>
+                    <span class="stat"><strong>4</strong> Flow types</span>
+                    <span class="stat"><strong>3-tier</strong> field detection</span>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-header">
+                    <span class="product-name">Contact Duplicate Detection v2</span>
+                    <span class="product-type type-sf">Salesforce</span>
+                </div>
+                <p class="product-desc">Exact, fuzzy, and phonetic matching with cross-object detection, auto-merge, and bulk deduplication for 10,000+ records.</p>
+                <div class="product-stats">
+                    <span class="stat"><strong>10</strong> scenarios</span>
+                    <span class="stat"><strong>6</strong> Apex classes</span>
+                    <span class="stat"><strong>4</strong> Flows</span>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-header">
+                    <span class="product-name">Opportunity Auto Assignment v2</span>
+                    <span class="product-type type-sf">Salesforce</span>
+                </div>
+                <p class="product-desc">6 assignment strategies including Territory2, Round-Robin, Capacity balancing, and Product expertise matching.</p>
+                <div class="product-stats">
+                    <span class="stat"><strong>10</strong> scenarios</span>
+                    <span class="stat"><strong>6</strong> strategies</span>
+                    <span class="stat"><strong>3</strong> custom objects</span>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-header">
+                    <span class="product-name">Audit (SOX/IPE Compliance)</span>
+                    <span class="product-type type-internal">Internal</span>
+                </div>
+                <p class="product-desc">Monthly user access snapshots, HR termination cross-checking, profile change detection, PDF reports, and email delivery.</p>
+                <div class="product-stats">
+                    <span class="stat"><strong>10</strong> scenarios</span>
+                    <span class="stat"><strong>13</strong> Apex classes</span>
+                    <span class="stat"><strong>3</strong> LWC</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERSPECTIVES -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">4.</span> Testing Perspectives</h2>
+        <p class="section-desc">Every test scenario is tagged with a stakeholder perspective to ensure comprehensive coverage.</p>
+        <div class="perspectives">
+            <div class="perspective-card">
+                <div class="perspective-icon">&#128187;</div>
+                <div class="perspective-name">Developer</div>
+                <div class="perspective-focus">Governor limits, bulkification, error handling, test coverage, code quality</div>
+            </div>
+            <div class="perspective-card">
+                <div class="perspective-icon">&#9881;</div>
+                <div class="perspective-name">Admin</div>
+                <div class="perspective-focus">Deployment, configuration, activation, permissions, documentation accuracy</div>
+            </div>
+            <div class="perspective-card">
+                <div class="perspective-icon">&#128202;</div>
+                <div class="perspective-name">Product Mgr</div>
+                <div class="perspective-focus">Features work as documented, edge cases handled, ROI delivered</div>
+            </div>
+            <div class="perspective-card">
+                <div class="perspective-icon">&#127912;</div>
+                <div class="perspective-name">Designer</div>
+                <div class="perspective-focus">LWC renders correctly, responsive layout, accessible, intuitive UX</div>
+            </div>
+            <div class="perspective-card">
+                <div class="perspective-icon">&#128100;</div>
+                <div class="perspective-name">Client</div>
+                <div class="perspective-focus">Business scenarios work, data integrity, performance, real-world usage</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEST SCENARIOS SAMPLE -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">5.</span> Test Scenarios (40 Total)</h2>
+        <p class="section-desc">Each product has 10+ regression test scenarios across all categories and perspectives.</p>
+        <table class="scenarios-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Test Scenario</th>
+                    <th>Perspective</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>FTG-FUNC-001</td>
+                    <td>Flow Test Generator</td>
+                    <td>Generate test for Record-Triggered After Save flow</td>
+                    <td>Developer</td>
+                    <td><span class="cat-tag cat-func">Functional</span></td>
+                    <td class="priority-p0">P0</td>
+                </tr>
+                <tr>
+                    <td>FTG-EDGE-005</td>
+                    <td>Flow Test Generator</td>
+                    <td>Handle Flow with 40+ decisions (auto-split)</td>
+                    <td>Developer</td>
+                    <td><span class="cat-tag cat-edge">Edge Case</span></td>
+                    <td class="priority-p1">P1</td>
+                </tr>
+                <tr>
+                    <td>FTG-REGR-009</td>
+                    <td>Flow Test Generator</td>
+                    <td>Previously generated tests still compile after CLI update</td>
+                    <td>PM</td>
+                    <td><span class="cat-tag cat-regr">Regression</span></td>
+                    <td class="priority-p0">P0</td>
+                </tr>
+                <tr>
+                    <td>CDD-FUNC-001</td>
+                    <td>Contact Duplicate Detection</td>
+                    <td>Exact email match blocks duplicate creation</td>
+                    <td>Client</td>
+                    <td><span class="cat-tag cat-func">Functional</span></td>
+                    <td class="priority-p0">P0</td>
+                </tr>
+                <tr>
+                    <td>CDD-FUNC-003</td>
+                    <td>Contact Duplicate Detection</td>
+                    <td>Phonetic match ("Steven" vs "Stephen") detected</td>
+                    <td>PM</td>
+                    <td><span class="cat-tag cat-func">Functional</span></td>
+                    <td class="priority-p1">P1</td>
+                </tr>
+                <tr>
+                    <td>CDD-BULK-006</td>
+                    <td>Contact Duplicate Detection</td>
+                    <td>Process 200 contacts without governor limits</td>
+                    <td>Developer</td>
+                    <td><span class="cat-tag cat-bulk">Bulk</span></td>
+                    <td class="priority-p1">P1</td>
+                </tr>
+                <tr>
+                    <td>OAA-FUNC-001</td>
+                    <td>Opp Auto Assignment</td>
+                    <td>Round-robin distributes evenly across 10 reps</td>
+                    <td>PM</td>
+                    <td><span class="cat-tag cat-func">Functional</span></td>
+                    <td class="priority-p0">P0</td>
+                </tr>
+                <tr>
+                    <td>OAA-EDGE-006</td>
+                    <td>Opp Auto Assignment</td>
+                    <td>Skip rep on vacation in round-robin</td>
+                    <td>Admin</td>
+                    <td><span class="cat-tag cat-edge">Edge Case</span></td>
+                    <td class="priority-p1">P1</td>
+                </tr>
+                <tr>
+                    <td>OAA-SEC-008</td>
+                    <td>Opp Auto Assignment</td>
+                    <td>Assignment history audit trail created for compliance</td>
+                    <td>Admin</td>
+                    <td><span class="cat-tag cat-sec">Security</span></td>
+                    <td class="priority-p1">P1</td>
+                </tr>
+                <tr>
+                    <td>AUD-FUNC-001</td>
+                    <td>Audit (SOX/IPE)</td>
+                    <td>Monthly snapshot captures all active users</td>
+                    <td>PM</td>
+                    <td><span class="cat-tag cat-func">Functional</span></td>
+                    <td class="priority-p0">P0</td>
+                </tr>
+                <tr>
+                    <td>AUD-SEC-007</td>
+                    <td>Audit (SOX/IPE)</td>
+                    <td>Only Audit_Administrator can view findings</td>
+                    <td>Admin</td>
+                    <td><span class="cat-tag cat-sec">Security</span></td>
+                    <td class="priority-p0">P0</td>
+                </tr>
+                <tr>
+                    <td>AUD-UAT-010</td>
+                    <td>Audit (SOX/IPE)</td>
+                    <td>Compliance officer generates SOX report for auditors</td>
+                    <td>Client</td>
+                    <td><span class="cat-tag cat-uat">UAT</span></td>
+                    <td class="priority-p1">P1</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- AGENT WORKFLOW -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">6.</span> Agent Execution Workflow</h2>
+        <p class="section-desc">Claude agents handle the entire test lifecycle - from execution to ticket creation.</p>
+        <div class="workflow">
+            <div class="workflow-step">
+                <div class="step-num step-1">1</div>
+                <div class="step-content">
+                    <h4>User Triggers Test Run</h4>
+                    <p>"Run regression tests for Contact Duplicate Detection v2" or triggered by schedule/deployment</p>
+                </div>
+            </div>
+            <div class="workflow-step">
+                <div class="step-num step-2">2</div>
+                <div class="step-content">
+                    <h4>Mark Run "In Progress" in OpenProject</h4>
+                    <p>Creates task under Regression Testing epic with run timestamp</p>
+                    <span class="step-agent">openproject-specialist</span>
+                </div>
+            </div>
+            <div class="workflow-step">
+                <div class="step-num step-3">3</div>
+                <div class="step-content">
+                    <h4>Execute 4-Layer Test Suite</h4>
+                    <p>Reads YAML test definitions, runs CLI commands layer by layer, records pass/fail for each test</p>
+                    <span class="step-agent">salesforce-qa-specialist</span>
+                </div>
+            </div>
+            <div class="workflow-step">
+                <div class="step-num step-4">4</div>
+                <div class="step-content">
+                    <h4>Generate Results & Reports</h4>
+                    <p>Writes JSON results file + Markdown summary report with failure details, stack traces, coverage</p>
+                    <span class="step-agent">salesforce-qa-specialist</span>
+                </div>
+            </div>
+            <div class="workflow-step">
+                <div class="step-num step-5">5</div>
+                <div class="step-content">
+                    <h4>Create Tickets for Failures</h4>
+                    <p>New regressions get HIGH priority tickets. Existing issues get comments. Flaky tests flagged after 3+ failures.</p>
+                    <span class="step-agent">openproject-specialist</span>
+                </div>
+            </div>
+            <div class="workflow-step">
+                <div class="step-num step-6">6</div>
+                <div class="step-content">
+                    <h4>Fix & Rerun</h4>
+                    <p>Developer agent fixes the issue, deploys fix, reruns test suite to confirm resolution</p>
+                    <span class="step-agent">salesforce-builder</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAMPLE REPORT -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">7.</span> Sample Test Report Output</h2>
+        <p class="section-desc">Each test run generates a structured report showing pass/fail per layer.</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="report-preview">
+                <div class="report-header">
+                    <span class="report-title">Contact Duplicate Detection v2</span>
+                    <span class="report-status status-pass">PASSED</span>
+                </div>
+                <div class="report-body">
+                    <div class="report-row"><span class="report-layer">Layer 1: Deploy Validate</span><span class="report-result pass">PASS (42s)</span></div>
+                    <div class="report-row"><span class="report-layer">Layer 2: Apex Tests (12 methods)</span><span class="report-result pass">PASS (3m 12s)</span></div>
+                    <div class="report-row"><span class="report-layer">Layer 3: Data Scenarios (8 tests)</span><span class="report-result pass">PASS (7m 45s)</span></div>
+                    <div class="report-row"><span class="report-layer">Layer 4: Static Analysis</span><span class="report-result pass">PASS (1m 18s)</span></div>
+                    <div class="report-row" style="border-top: 1px solid #334155; padding-top: 12px;"><span class="report-layer"><strong>Coverage: 92%</strong></span><span class="report-result"><strong>12m 17s total</strong></span></div>
+                </div>
+            </div>
+            <div class="report-preview">
+                <div class="report-header">
+                    <span class="report-title">Opp Auto Assignment v2</span>
+                    <span class="report-status status-fail">1 FAILURE</span>
+                </div>
+                <div class="report-body">
+                    <div class="report-row"><span class="report-layer">Layer 1: Deploy Validate</span><span class="report-result pass">PASS (38s)</span></div>
+                    <div class="report-row"><span class="report-layer">Layer 2: Apex Tests (11/12 pass)</span><span class="report-result fail">FAIL (4m 02s)</span></div>
+                    <div class="report-row"><span class="report-layer">Layer 3: Data Scenarios</span><span class="report-result skip">SKIPPED</span></div>
+                    <div class="report-row"><span class="report-layer">Layer 4: Static Analysis</span><span class="report-result pass">PASS (1m 05s)</span></div>
+                    <div class="report-row" style="border-top: 1px solid #334155; padding-top: 12px;"><span class="report-layer"><strong style="color: #f87171;">Ticket: WP#891</strong></span><span class="report-result"><strong>5m 45s total</strong></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPENPROJECT -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">8.</span> OpenProject Structure</h2>
+        <p class="section-desc">A dedicated OpenProject project with proper epic/phase/task hierarchy.</p>
+        <div class="op-structure">
+            <div class="op-line"><span class="op-epic">Project: Regression Testing Framework (NEW)</span></div>
+            <div class="op-line">&nbsp;</div>
+            <div class="op-line"><span class="op-phase">&boxur;&horbar; Epic: Framework Development</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; Phase: Foundation (Week 1-2)</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; Phase: Agent Integration (Week 3)</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; Phase: All Products (Week 4)</span></div>
+            <div class="op-line">&nbsp;</div>
+            <div class="op-line"><span class="op-phase">&boxur;&horbar; Epic: Scheduled Test Runs</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; 2026-02-10 Regression Run</span> <span class="op-auto">(auto-created)</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; 2026-02-11 Regression Run</span> <span class="op-auto">(auto-created)</span></div>
+            <div class="op-line">&nbsp;</div>
+            <div class="op-line"><span class="op-phase">&boxur;&horbar; Epic: Failure Remediation</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; FIX: OAA - SOQL limit in bulk test</span> <span class="op-auto">(auto-created on failure)</span></div>
+            <div class="op-line"><span class="op-task">&boxur;&horbar; FIX: CDD - Null email edge case</span> <span class="op-auto">(auto-created on failure)</span></div>
+        </div>
+    </div>
+
+    <!-- GROWTH -->
+    <div class="section">
+        <h2 class="section-title"><span class="icon">9.</span> Growth Roadmap</h2>
+        <p class="section-desc">From internal tool to sellable product in 3 phases.</p>
+        <div class="growth-timeline">
+            <div class="growth-phase phase-1">
+                <div class="phase-label">Phase 1</div>
+                <div class="phase-title">Internal Use</div>
+                <div class="phase-time">Months 1-3</div>
+                <ul class="phase-items">
+                    <li>Test our 4 products</li>
+                    <li>200+ test scenarios</li>
+                    <li>Agent execution pipeline</li>
+                    <li>OpenProject integration</li>
+                    <li>Validate concept with real bugs</li>
+                </ul>
+            </div>
+            <div class="growth-phase phase-2">
+                <div class="phase-label">Phase 2</div>
+                <div class="phase-title">Templatize</div>
+                <div class="phase-time">Months 4-6</div>
+                <ul class="phase-items">
+                    <li>Reusable for any SF product</li>
+                    <li>AI scenario generation</li>
+                    <li>Config wizard for new products</li>
+                    <li>80% auto-generated tests</li>
+                    <li>Test on new products we build</li>
+                </ul>
+            </div>
+            <div class="growth-phase phase-3">
+                <div class="phase-label">Phase 3</div>
+                <div class="phase-title">Product Launch</div>
+                <div class="phase-time">Months 7-12</div>
+                <ul class="phase-items">
+                    <li>Gumroad / AppExchange listing</li>
+                    <li>SaaS dashboard for clients</li>
+                    <li>Multi-org support</li>
+                    <li>Target: 100 customers</li>
+                    <li>Target: $30K MRR</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    Regression Testing Framework &mdash; Salesforce Solutions &mdash; February 2026
+</div>
+
+</body>
+</html>

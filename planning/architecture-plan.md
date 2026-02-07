@@ -16,6 +16,38 @@
 
 ---
 
+## Key Policies
+
+### No Flows in ForceGuard (CRITICAL)
+
+**ForceGuard is a managed package product - ALL automation is built in Apex, NOT Flows.**
+
+**Why:**
+- **IP Protection:** Flows expose business logic to customers in Flow Builder - revealing algorithms, rules, and competitive advantages
+- **Obfuscation:** Apex in managed packages is obfuscated; customers see method signatures only, not implementation
+- **Licensing:** Flow logic can be copied/exported; Apex cannot
+- **Professional Image:** Enterprise buyers expect code-based managed packages
+
+**Implementation:**
+- Record automation → Apex Triggers with handler classes
+- Scheduled automation → Schedulable Apex
+- User interactions → LWC with Apex controllers
+- Platform events → Apex EventBus handlers
+
+**About @InvocableMethod:**
+- Apex methods can be marked `@InvocableMethod` for customer extensibility via Flow Builder
+- Core logic remains protected via obfuscation
+- Customers see signature/description, not implementation
+
+**Important Distinction:**
+- **ForceGuard itself:** ZERO Flows (this document, Phase 6 tasks)
+- **Products being tested:** MAY contain Flows (e.g., Audit product has 8 Flows)
+- ForceGuard tests other products' Flows but contains none itself
+
+See Phase 6 for full details.
+
+---
+
 ## 1. Architecture Overview
 
 ### 1.1 The 4-Layer Testing Model
@@ -28,6 +60,7 @@ Layer 1: Deployment Validation  [BLOCKING]  ~30-60s
   Action: sf project deploy validate --source-dir <product-source-path>
   Output: Regression_Test_Result__c with deploy status, error messages
   Stops:  If any class/trigger/LWC/Flow fails compilation or has broken references
+  Note:   ForceGuard tests products that MAY contain Flows (like Audit). ForceGuard itself has no Flows.
 
 Layer 2: Apex Test Execution    [BLOCKING]  ~2-5m
   Input:  Regression_Test_Case__c records where Test_Layer__c = 'Apex Test'
@@ -245,13 +278,13 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 
 **Title:** Create package.xml manifest with all metadata components
 
-**Description:** Build the `manifest/package.xml` file listing all planned custom objects, Apex classes, LWC components, Flows, custom metadata types, permission sets, tabs, and page layouts. This manifest will be used for deployment validation. Include placeholders for components that will be built in later phases so the manifest grows with the project. Start with the data model components since those are built first.
+**Description:** Build the `manifest/package.xml` file listing all planned custom objects, Apex classes, LWC components, custom metadata types, permission sets, tabs, and page layouts. This manifest will be used for deployment validation. Include placeholders for components that will be built in later phases so the manifest grows with the project. Start with the data model components since those are built first. **IMPORTANT:** ForceGuard contains NO Flows (IP protection policy - see Phase 6).
 
 **Acceptance Criteria:**
 - [ ] `manifest/package.xml` exists with correct API version
 - [ ] All 6 custom objects listed under `CustomObject`
 - [ ] Custom metadata types listed under `CustomMetadata`
-- [ ] Placeholder entries for Apex classes, LWC, Flows
+- [ ] Placeholder entries for Apex classes and LWC (NO Flows - see Phase 6 policy)
 - [ ] Manifest validates with `sf project retrieve start` (no syntax errors)
 
 **Priority:** P0
@@ -603,15 +636,15 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 
 **Title:** Create deployment validation test cases for all Audit metadata
 
-**Description:** Create `Regression_Test_Case__c` records for Layer 1 that verify all Audit metadata deploys without errors. Test cases should validate: (1) All 35 non-test Apex classes compile and deploy, (2) All 35 test Apex classes compile and deploy, (3) UserAuditTestDataFactory deploys, (4) All 7 custom objects deploy with all fields and relationships intact, (5) All 8 Flows deploy and activate without errors, (6) All 7 LWC components deploy without JavaScript errors, (7) All 4 custom metadata types deploy with default records, (8) All 3 permission sets deploy with correct object and field permissions, (9) All 2 Visualforce pages deploy, (10) All cross-object references (lookups, master-detail) resolve. Steps__c for each test case should contain the metadata component list to validate.
+**Description:** Create `Regression_Test_Case__c` records for Layer 1 that verify all Audit metadata deploys without errors. Test cases should validate: (1) All 35 non-test Apex classes compile and deploy, (2) All 35 test Apex classes compile and deploy, (3) UserAuditTestDataFactory deploys, (4) All 7 custom objects deploy with all fields and relationships intact, (5) All 8 Flows deploy and activate without errors *[Note: These are the AUDIT product's Flows being tested - ForceGuard itself has no Flows]*, (6) All 7 LWC components deploy without JavaScript errors, (7) All 4 custom metadata types deploy with default records, (8) All 3 permission sets deploy with correct object and field permissions, (9) All 2 Visualforce pages deploy, (10) All cross-object references (lookups, master-detail) resolve. Steps__c for each test case should contain the metadata component list to validate.
 
 **Acceptance Criteria:**
 - [ ] 5-6 test cases created for Layer 1
-- [ ] Covers all metadata types: Apex, objects, Flows, LWC, CMT, perm sets, VF
+- [ ] Covers all metadata types: Apex, objects, Audit product Flows, LWC, CMT, perm sets, VF
 - [ ] Each test case lists specific components in Steps__c
 - [ ] Expected_Result__c states "All components deploy without errors"
 - [ ] Tests cover cross-reference resolution (lookups, formula fields)
-- [ ] Test for Flow activation (not just deployment)
+- [ ] Test for Flow activation on Audit product Flows (not applicable to ForceGuard - it has no Flows)
 
 **Priority:** P0
 **Effort:** M
@@ -707,13 +740,13 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 
 **Title:** Create security and permission test cases for the 3 Audit permission sets
 
-**Description:** Create `Regression_Test_Case__c` records that verify the 3 permission sets (Audit_Administrator, Audit_Full_Access, Audit_Viewer) grant correct access levels. Tests: (1) Audit_Administrator can CRUD all 7 objects - create, read, update, delete records for each object, (2) Audit_Administrator has Bypass_All_Flows custom permission, (3) Audit_Full_Access can CRUD all objects but does NOT have Bypass_All_Flows, (4) Audit_Viewer can READ all objects but cannot Create, Update, or Delete, (5) User without any permission set cannot access any audit objects, (6) Audit_Viewer cannot run audit batch (runAuditNow should fail), (7) Audit_Viewer cannot resolve findings (resolveFindings should fail), (8) FLS enforcement - verify WITH USER_MODE blocks field access appropriately, (9) Sharing rules - verify record visibility based on ownership, (10) All @AuraEnabled methods handle insufficient access gracefully (AuraHandledException, not raw DML exception). Steps__c should use `System.runAs()` with test users assigned specific permission sets.
+**Description:** Create `Regression_Test_Case__c` records that verify the 3 permission sets (Audit_Administrator, Audit_Full_Access, Audit_Viewer) grant correct access levels. Tests: (1) Audit_Administrator can CRUD all 7 objects - create, read, update, delete records for each object, (2) Audit_Administrator has Bypass_All_Flows custom permission *[Note: This is the AUDIT product's custom permission for their Flows - ForceGuard has no Flows to bypass]*, (3) Audit_Full_Access can CRUD all objects but does NOT have Bypass_All_Flows, (4) Audit_Viewer can READ all objects but cannot Create, Update, or Delete, (5) User without any permission set cannot access any audit objects, (6) Audit_Viewer cannot run audit batch (runAuditNow should fail), (7) Audit_Viewer cannot resolve findings (resolveFindings should fail), (8) FLS enforcement - verify WITH USER_MODE blocks field access appropriately, (9) Sharing rules - verify record visibility based on ownership, (10) All @AuraEnabled methods handle insufficient access gracefully (AuraHandledException, not raw DML exception). Steps__c should use `System.runAs()` with test users assigned specific permission sets.
 
 **Acceptance Criteria:**
 - [ ] 8-10 test cases created for security testing
 - [ ] All 3 permission sets tested (Admin, Full Access, Viewer)
 - [ ] CRUD tested for all 7 custom objects per permission set
-- [ ] Bypass_All_Flows custom permission verified on Admin only
+- [ ] Bypass_All_Flows custom permission verified on Admin only (Audit product's permission)
 - [ ] Negative tests: Viewer cannot write, no-perm-set user blocked
 - [ ] FLS enforcement verified via WITH USER_MODE queries
 - [ ] All tests use System.runAs() with appropriate test users
@@ -835,24 +868,48 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 
 **Duration:** 6-8 days
 
+#### No Flows Policy (CRITICAL)
+
+**ForceGuard is a managed package product - ALL automation MUST be built in Apex, NOT Flows.**
+
+**Why:**
+- **IP Protection:** Flows expose business logic to clients. In Flow Builder, customers can see every decision, formula, query, and field assignment. This reveals your product's algorithms, business rules, and competitive advantages.
+- **Obfuscation:** Apex code in managed packages is obfuscated - clients cannot see method implementations, logic, or algorithms. They only see method signatures.
+- **Licensing Enforcement:** Flow logic can be copied, reverse-engineered, or exported. Apex cannot.
+- **Professional Image:** Enterprise buyers expect managed packages to be code-based, not declarative automation that looks like "admin configuration."
+
+**Implementation Pattern:**
+- Record automation → Apex Trigger with handler class
+- Scheduled automation → Schedulable Apex
+- User interactions → LWC with Apex controllers
+- Platform events → Apex Trigger or EventBus.subscribe()
+
+**What about @InvocableMethod?**
+- Apex methods marked `@InvocableMethod` can still be called from Flow Builder if an admin wants to extend functionality
+- But the core product logic is protected in obfuscated Apex
+- Customers see method signature and description, not implementation
+
 ---
 
-#### Task 6.1: Build Auto-Regression-Finding Flow
+#### Task 6.1: Build Auto-Regression-Finding Trigger
 
-**Title:** Create Record-Triggered Flow that creates findings for regression failures
+**Title:** Create Apex Trigger that creates findings for regression failures
 
-**Description:** Build a Record-Triggered Flow on `Regression_Test_Result__c` (After Insert) that fires when Status__c = 'Failed' AND Is_Regression__c = true. The Flow should: (1) Query the related Regression_Test_Case__c for test details, (2) Query the related Regression_Test_Run__c for suite context, (3) Create a child record (or platform event) representing the regression finding with: test case title, suite name, error message, expected result, actual result, layer, category, perspective, priority, and timestamp. (4) If Auto_Ticket_Enabled__c is true in Regression_Config__mdt, call an invocable action `RegressionTicketCreator` that creates a work package in the configured project management tool. The Flow must respect the Bypass_All_Flows custom permission. All Flow elements must have descriptions.
+**Description:** Build an Apex Trigger on `Regression_Test_Result__c` (After Insert) that fires when Status__c = 'Failed' AND Is_Regression__c = true. Implementation: (1) Trigger `RegressionTestResultTrigger` with handler pattern calling `RegressionFindingHandler.handleAfterInsert(List<Regression_Test_Result__c>)`. (2) Handler filters records where Status = 'Failed' AND Is_Regression = true, then queries related Regression_Test_Case__c and Regression_Test_Run__c for context. (3) Creates `Regression_Finding__c` records with: test case title, suite name, error message, expected result, actual result, layer, category, perspective, priority, and timestamp. (4) If Auto_Ticket_Enabled__c is true in Regression_Config__mdt, calls `RegressionTicketCreator.createTickets(List<RegressionFindingRequest>)` (@InvocableMethod) that creates work packages in the configured project management tool. (5) Trigger must respect the Bypass_All_Automation__c custom permission (check via `FeatureManagement.checkPermission('Bypass_All_Automation')`). (6) Fully bulkified - handles 200+ results in a single transaction. (7) Deduplicates findings by test case + run ID to prevent duplicates.
 
 **Acceptance Criteria:**
-- [ ] Flow triggers on Regression_Test_Result__c After Insert
+- [ ] Apex Trigger `RegressionTestResultTrigger` created with `after insert` context
+- [ ] Handler class `RegressionFindingHandler` with `handleAfterInsert` method
 - [ ] Entry condition: Status = Failed AND Is_Regression = true
-- [ ] Queries parent test case and run for context
-- [ ] Creates regression finding record with full context
+- [ ] Queries parent test case and run for context (bulkified)
+- [ ] Creates regression finding records with full context
 - [ ] Calls invocable action for auto-ticketing (when enabled)
-- [ ] Respects Bypass_All_Flows custom permission
-- [ ] All Flow elements have descriptions
-- [ ] Flow activates without errors
-- [ ] Does not create duplicates for the same failure
+- [ ] Respects Bypass_All_Automation custom permission
+- [ ] Fully bulkified - no SOQL/DML in loops
+- [ ] Does not create duplicates for the same failure (dedup by test case + run)
+- [ ] Test class achieves 90%+ coverage with bulk test (200+ records)
+- [ ] `with sharing` keyword declared
+- [ ] All SOQL queries use `WITH USER_MODE` or `WITH SYSTEM_MODE`
 
 **Priority:** P0
 **Effort:** M
@@ -933,10 +990,10 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 
 **Title:** Create REST callout for auto-ticket creation on regression failures
 
-**Description:** Build `RegressionTicketCreator` (invocable action, called from the auto-regression Flow in Task 6.1) that creates tickets in external project management tools when regressions are detected. Implementation: (1) `@InvocableMethod` that accepts regression details (test case title, error message, suite name, run ID), (2) Uses Named Credential for authentication (supports OpenProject API), (3) Creates a work package with: subject = "[ForceGuard Regression] {test case title}", description = formatted failure details with links, type = Bug, priority based on test case priority. (4) Stores the external ticket ID back on the Regression_Test_Result__c record. (5) If a ticket already exists for this test case (check by external ID), add a comment instead of creating a duplicate. Use HttpRequest/HttpResponse with proper error handling for network failures, rate limiting (429), and authentication errors (401). Named Credential: `ForceGuard_Ticket_System`.
+**Description:** Build `RegressionTicketCreator` (invocable action, called from the Apex handler in Task 6.1) that creates tickets in external project management tools when regressions are detected. Implementation: (1) `@InvocableMethod` that accepts regression details (test case title, error message, suite name, run ID), (2) Uses Named Credential for authentication (supports OpenProject API), (3) Creates a work package with: subject = "[ForceGuard Regression] {test case title}", description = formatted failure details with links, type = Bug, priority based on test case priority. (4) Stores the external ticket ID back on the Regression_Test_Result__c record. (5) If a ticket already exists for this test case (check by external ID), add a comment instead of creating a duplicate. Use HttpRequest/HttpResponse with proper error handling for network failures, rate limiting (429), and authentication errors (401). Named Credential: `ForceGuard_Ticket_System`. **Note:** While this is an `@InvocableMethod` (callable from Flow Builder), it is primarily called from Apex code. The @InvocableMethod annotation allows customers to extend functionality if needed, but the core logic is protected via obfuscation.
 
 **Acceptance Criteria:**
-- [ ] @InvocableMethod callable from Flow
+- [ ] @InvocableMethod callable from Apex or Flow (if customer extends)
 - [ ] Uses Named Credential for authentication
 - [ ] Creates work package with formatted description
 - [ ] Avoids duplicate tickets (checks existing external ID)
@@ -945,6 +1002,7 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 - [ ] Error handling for network failures, 401, 429
 - [ ] HttpCalloutMock test class for 90%+ coverage
 - [ ] Configurable via Regression_Config__mdt (enable/disable)
+- [ ] `with sharing` and `WITH USER_MODE`/`WITH SYSTEM_MODE` on all SOQL
 
 **Priority:** P2
 **Effort:** M
@@ -1082,7 +1140,8 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 - [ ] PostInstallScript creates default config and sample suite
 - [ ] UninstallScript cleans up scheduled jobs
 - [ ] Package installs on fresh scratch org without errors
-- [ ] All 6 objects, all Apex classes, all LWC, all Flows included
+- [ ] All 6 objects, all Apex classes, all LWC included
+- [ ] CRITICAL: Zero Flows in package (verify with `sf project retrieve start -m Flow`)
 - [ ] Zip file alternative created for manual deployment
 - [ ] Deployment script works for SFDX-based deployment
 - [ ] Installation verified on both Developer and Enterprise edition
@@ -1095,9 +1154,13 @@ For Layer 4 (static analysis), since `sf code-analyzer` is a CLI tool and cannot
 
 ## 3. Audit Product Test Scenarios
 
-### 3.1 Flow-to-Test-Case Mapping
+### 3.1 Audit Product Automation Test Mapping
 
-Each of the 8 Audit Flows maps to specific ForceGuard test cases:
+**Context:** The Audit product (the first product ForceGuard will test) has 8 record-triggered automations (Flows or Apex Triggers). ForceGuard must verify these automations work correctly. This section maps each Audit automation to specific ForceGuard test cases.
+
+**CRITICAL CLARIFICATION:** These Flow references (Flow 1-8 below) are the **AUDIT product's Flows being TESTED** by ForceGuard. **ForceGuard itself contains ZERO Flows** (see "No Flows Policy" in Phase 6). ForceGuard is pure Apex + LWC to protect IP. The Audit product being tested may contain Flows, but the ForceGuard test framework does not.
+
+Each of the 8 Audit automations maps to specific ForceGuard test cases:
 
 #### Flow 1: Set_Latest_Flag_On_New_Audit_Run (Before Insert on Audit_Run__c)
 
@@ -1476,9 +1539,9 @@ These will be added in Phase 2 of the product roadmap (Templatize phase), not in
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ ForceGuard Dashboard                          [Run All] [Schedule] [?] │
 ├─────────────┬──────────────┬──────────────┬─────────────────────────────┤
-│  Pass Rate  │ Total Tests  │   Failures   │  Flow Coverage              │
+│  Pass Rate  │ Total Tests  │   Failures   │  Automation Coverage        │
 │    94%      │    156       │     3        │     67%                     │
-│   +2% ▲     │ 12 suites    │  2 regress.  │  32/47 Flows               │
+│   +2% ▲     │ 12 suites    │  2 regress.  │  32/47 Automations         │
 ├─────────────┴──────────────┴──────────────┴─────────────────────────────┤
 │                                                                         │
 │  Pass Rate Trend (last 10 runs)                                        │

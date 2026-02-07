@@ -267,13 +267,13 @@ private class RegressionTestAssertionTest {
 
         System.runAs(testUser) {
             Test.startTest();
-            // Use a class name that likely has no coverage data in test context
+            // Pass null coverage to simulate no data
             RegressionTestAssertion.AssertionResult result =
-                RegressionTestAssertion.assertCoverage('FakeNonExistentClass123', 75);
+                RegressionTestAssertion.assertCoverage('FakeNonExistentClass123', null, 75);
             Test.stopTest();
 
             System.assertEquals(false, result.passed,
-                'Coverage assertion should fail for non-existent class');
+                'Coverage assertion should fail for null coverage');
             System.assert(result.message.contains('No coverage data'),
                 'Message should indicate no coverage data, got: ' + result.message);
         }
@@ -286,7 +286,7 @@ private class RegressionTestAssertionTest {
         System.runAs(testUser) {
             Test.startTest();
             RegressionTestAssertion.AssertionResult result =
-                RegressionTestAssertion.assertCoverage('', 75);
+                RegressionTestAssertion.assertCoverage('', 80.0, 75);
             Test.stopTest();
 
             System.assertEquals(false, result.passed,
@@ -392,11 +392,51 @@ private class RegressionTestAssertionTest {
             Test.startTest();
             // Null minPercent should default to 75
             RegressionTestAssertion.AssertionResult result =
-                RegressionTestAssertion.assertCoverage('SomeNonExistentClass', null);
+                RegressionTestAssertion.assertCoverage('SomeNonExistentClass', null, null);
             Test.stopTest();
 
             System.assertEquals(false, result.passed,
                 'No coverage data should fail even with null minPercent');
+        }
+    }
+
+    @IsTest
+    static void testAssertCoveragePassesThreshold() {
+        User testUser = [SELECT Id FROM User WHERE Alias = 'fgtest' LIMIT 1];
+
+        System.runAs(testUser) {
+            Test.startTest();
+            // 85% coverage meets 75% threshold
+            RegressionTestAssertion.AssertionResult result =
+                RegressionTestAssertion.assertCoverage('MyClass', 85.0, 75);
+            Test.stopTest();
+
+            System.assertEquals(true, result.passed,
+                '85% coverage should pass 75% threshold');
+            System.assertEquals('85.0%', result.actual,
+                'Actual should be 85.0%');
+            System.assertEquals('75.0%', result.expected,
+                'Expected should be 75.0%');
+        }
+    }
+
+    @IsTest
+    static void testAssertCoverageFailsThreshold() {
+        User testUser = [SELECT Id FROM User WHERE Alias = 'fgtest' LIMIT 1];
+
+        System.runAs(testUser) {
+            Test.startTest();
+            // 60% coverage fails 75% threshold
+            RegressionTestAssertion.AssertionResult result =
+                RegressionTestAssertion.assertCoverage('MyClass', 60.0, 75);
+            Test.stopTest();
+
+            System.assertEquals(false, result.passed,
+                '60% coverage should fail 75% threshold');
+            System.assertEquals('60.0%', result.actual,
+                'Actual should be 60.0%');
+            System.assertEquals('75.0%', result.expected,
+                'Expected should be 75.0%');
         }
     }
 

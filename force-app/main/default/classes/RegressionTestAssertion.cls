@@ -182,12 +182,13 @@ public with sharing class RegressionTestAssertion {
 
     /**
      * 6. Code coverage threshold check.
-     * Queries ApexCodeCoverageAggregate for the specified class.
-     * @param className  The Apex class name to check
-     * @param minPercent The minimum acceptable coverage percentage (e.g. 75 for 75%)
+     * Accepts coverage percentage as parameter (fetched by caller via Tooling API).
+     * @param className       The Apex class name being checked
+     * @param actualCoverage  The actual coverage percentage (e.g. 85.5 for 85.5%)
+     * @param minPercent      The minimum acceptable coverage percentage (e.g. 75 for 75%)
      * @return AssertionResult indicating whether coverage meets threshold
      */
-    public static AssertionResult assertCoverage(String className, Decimal minPercent) {
+    public static AssertionResult assertCoverage(String className, Decimal actualCoverage, Decimal minPercent) {
         if (String.isBlank(className)) {
             return new AssertionResult(false, 'className is required',
                 (minPercent != null ? minPercent.setScale(1) : 0) + '%', 'blank');
@@ -195,15 +196,7 @@ public with sharing class RegressionTestAssertion {
         if (minPercent == null) {
             minPercent = 75;
         }
-
-        List<ApexCodeCoverageAggregate> coverages = [
-            SELECT ApexClassOrTrigger.Name, NumLinesCovered, NumLinesUncovered
-            FROM ApexCodeCoverageAggregate
-            WHERE ApexClassOrTrigger.Name = :className
-            WITH USER_MODE
-        ];
-
-        if (coverages.isEmpty()) {
+        if (actualCoverage == null) {
             return new AssertionResult(
                 false,
                 'No coverage data for ' + className,
@@ -212,11 +205,7 @@ public with sharing class RegressionTestAssertion {
             );
         }
 
-        Decimal covered = coverages[0].NumLinesCovered;
-        Decimal uncovered = coverages[0].NumLinesUncovered;
-        Decimal total = covered + uncovered;
-        Decimal coverage = total > 0 ? (covered / total) * 100 : 0;
-        Boolean passed = coverage >= minPercent;
+        Boolean passed = actualCoverage >= minPercent;
 
         return new AssertionResult(
             passed,
@@ -224,7 +213,7 @@ public with sharing class RegressionTestAssertion {
                 ? className + ' coverage meets threshold: PASSED'
                 : className + ' coverage below threshold',
             minPercent.setScale(1) + '%',
-            coverage.setScale(1) + '%'
+            actualCoverage.setScale(1) + '%'
         );
     }
 

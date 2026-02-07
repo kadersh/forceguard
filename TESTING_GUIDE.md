@@ -243,6 +243,27 @@ Perspectives answer the question: "Who cares if this test fails?"
 
 ---
 
+## ForceGuard's No-Flows Policy
+
+**ForceGuard itself contains NO Flows.** All automation is Apex-based for managed package IP protection.
+
+**Why no Flows?**
+- Flows are transparent XML files in managed packages -- subscribers can see your entire automation logic
+- Apex classes are compiled bytecode -- logic remains protected
+- For an AppExchange product, protecting intellectual property is critical
+
+**ForceGuard's automation strategy:**
+- **Record-Triggered Flows → Apex Triggers + Handler Classes**
+- **Screen Flows → Lightning Web Components**
+- **Scheduled Flows → Schedulable Apex**
+- **Invocable Actions → @InvocableMethod for extensibility**
+
+**But ForceGuard CAN test other products' Flows.**
+
+The Layer 3 (Data Scenario) tests are designed to verify that YOUR product's Flows, automation, and business rules work correctly. The examples below demonstrate how to write tests that trigger and validate Flow behavior -- even though ForceGuard's own codebase is 100% Apex.
+
+---
+
 ## Common Patterns
 
 ### Pattern: Testing a Flow fires correctly

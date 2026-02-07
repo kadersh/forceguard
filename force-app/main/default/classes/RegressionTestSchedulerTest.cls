@@ -19,8 +19,6 @@ private class RegressionTestSchedulerTest {
             for (Regression_Test_Case__c tc : cases) {
                 if (tc.Test_Layer__c == 'Deployment') {
                     tc.Steps__c = 'CustomObject:Account';
-                } else {
-                    tc.Steps__c = '';
                 }
             }
             insert cases;

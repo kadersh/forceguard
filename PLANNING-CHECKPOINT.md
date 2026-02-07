@@ -169,13 +169,63 @@ If the system crashes, read this file first, then:
   - Git commit: 24 files, 3573 insertions
   - Total project: 3 commits on develop branch
 
+- [2026-02-07] AUDIT FLOW-TO-APEX CONVERSION COMPLETE
+  - 3 Audit Flows converted to @InvocableMethod Apex for managed package IP protection:
+    - SlaStatusCalculatorService (was: Update SLA Status Flow)
+    - RemediationDueDateService (was: Set Remediation Due Date Flow)
+    - AuditFindingCounter (was: Update Audit Finding Counts Flow)
+  - Original Flows retained as thin wrappers calling Apex
+  - Test classes created for all 3 services
+- [2026-02-07] FORCEGUARD NO-FLOWS POLICY APPLIED
+  - Architecture plan updated with "No Flows in ForceGuard" key policy section
+  - WP#938 (Task 6.1) converted from Flow to Apex Trigger + @InvocableMethod
+  - All Phase 6 tasks (WP#938-942) confirmed as pure Apex solutions
+  - OpenProject updated: WP#938 title + description changed, comments on WP#938-942 + Epic WP#901
+  - CODING_STANDARDS.md updated with No Flows Policy section
+  - README.md updated to reflect 100% Apex automation
+- [2026-02-07] SCRATCH ORG CREATED
+  - Org ID: 00DQI00000JeWSr2AN
+  - Username: test-tff0m2ahgl4m@example.com
+  - Instance: nosoftware-java-2006-dev-ed.scratch.my.salesforce.com
+  - Alias: forceguard-dev (set as default target-org)
+  - Expires: 2026-03-09
+  - DevHub: AV Production
+  - project-scratch-def.json fixed (removed deprecated enableSetPasswordInApi, sourceApiVersion)
+
+- [2026-02-07] PHASE 4 BUILD STARTED
+- [2026-02-07] WP#927-933: Audit Test Case Seeder - COMPLETE
+  - AuditTestCaseSeeder.cls (1,387 lines) - idempotent seed script
+  - AuditTestCaseSeederTest.cls (390 lines) - 10 test methods, 100% pass
+  - 63 test cases seeded across all 4 layers:
+    - Layer 1 Deployment: 6 tests (Apex, Objects, Flows, LWC, PermSets, CMTs)
+    - Layer 2 Apex Test: 10 tests (test class groups, coverage thresholds)
+    - Layer 3 Data Scenario: 42 tests (E2E workflows, features, integrations)
+    - Layer 4 Static Analysis: 5 tests (SOQL/DML patterns, CRUD/FLS, security)
+  - All categories: Deployment, Functional, Edge Case, Bulk, Security, Integration, Regression
+  - All perspectives: Developer, Admin, Product Manager, Client
+  - Deployed to scratch org: 108/108 components
+  - Seeder executed: 63 records in 2 DML + 1 SOQL
+- [2026-02-07] PHASE 4 BUILD COMPLETE - all 7 tasks done
+  - OpenProject WP#927-933 + WP#905 all closed
+- [2026-02-07] PHASE 3 FLS FIX COMPLETE
+  - 8 files fixed: Runner, RunnerTest, Reporter, Scheduler, SchedulerTest
+  - Removed all WITH USER_MODE + as user from framework classes (reserved for UI controllers only)
+  - Added missing Last_Result_Status__c to Runner SOQL SELECT
+  - Replaced Security.stripInaccessible with plain DML in Reporter
+  - Fixed SchedulerTest blanking Steps__c for Data Scenario layer
+  - Result: 76/76 tests pass (100% pass rate)
+
 ## Recovery Instructions (Updated)
 
 If the system crashes, read this file first, then:
-1. Phases 1-3 are COMPLETE - all source files exist
-2. Git repo is local only (develop + main branches) - no remote yet
-3. Next step: Phase 4 (Audit Product Test Scenarios) - WP#927-933
-4. OpenProject project ID 9 has full task structure with descriptions
-5. Architecture plan at planning/architecture-plan.md has all specs
-6. Deploy to org: sf project deploy start --source-dir force-app --target-org cm8670
-7. Salesforce default org: cm8670
+1. Phases 1-4 are COMPLETE - all source files exist
+2. Git repo is local only (develop + main branches) - needs GitHub remote
+3. Next step: Phase 5 (Lightning UI - LWC Dashboard) - WP#934-937
+4. Phase 3 FLS issues FIXED - 76/76 tests pass
+5. OpenProject project ID 9 has full task structure with descriptions
+6. Architecture plan at planning/architecture-plan.md has all specs (including No Flows policy)
+7. Scratch org: sf project deploy start --source-dir force-app --target-org forceguard-dev
+8. Scratch org alias: forceguard-dev (expires 2026-03-09)
+9. DevHub: AV Production (for creating new scratch orgs)
+10. DO NOT deploy to cm8670 (that's the work sandbox, not for ForceGuard)
+11. GitHub remote needs to be set up (kadersh/forceguard) - source of truth since scratch orgs expire

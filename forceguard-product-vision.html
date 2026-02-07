@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForceGuard - Product Vision & Plan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0a0e1a; color: #e2e8f0; line-height: 1.7; }
+
+        /* Navigation */
+        .nav { position: fixed; top: 0; left: 0; right: 0; background: rgba(10, 14, 26, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #1e293b; z-index: 100; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { font-size: 1.2em; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 24px; }
+        .nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.85em; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: #e2e8f0; }
+
+        /* Hero */
+        .hero { padding: 140px 40px 80px; text-align: center; background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%); }
+        .hero-eyebrow { font-size: 0.85em; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: #10b981; margin-bottom: 16px; }
+        .hero h1 { font-size: 3.5em; font-weight: 800; background: linear-gradient(135deg, #f1f5f9, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.15; }
+        .hero h1 span { background: linear-gradient(135deg, #3b82f6, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero .subtitle { font-size: 1.25em; color: #94a3b8; max-width: 700px; margin: 0 auto 36px; }
+        .hero-stats { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
+        .hero-stat { text-align: center; }
+        .hero-stat .num { font-size: 2.2em; font-weight: 800; color: #f1f5f9; }
+        .hero-stat .label { font-size: 0.8em; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* Sections */
+        .section { padding: 80px 0; }
+        .section-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: #3b82f6; margin-bottom: 12px; }
+        .section-title { font-size: 2.2em; font-weight: 800; color: #f1f5f9; margin-bottom: 12px; line-height: 1.2; }
+        .section-desc { color: #94a3b8; font-size: 1.05em; margin-bottom: 40px; max-width: 700px; }
+        .section-divider { border: none; border-top: 1px solid #1e293b; margin: 0; }
+
+        /* Problem / Solution */
+        .ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        .ps-card { padding: 36px; border-radius: 16px; }
+        .ps-card h3 { font-size: 1.3em; margin-bottom: 20px; }
+        .ps-card ul { list-style: none; }
+        .ps-card li { padding: 10px 0; padding-left: 28px; position: relative; color: #cbd5e1; font-size: 0.95em; }
+        .problem-card { background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); }
+        .problem-card h3 { color: #f87171; }
+        .problem-card li::before { content: ''; position: absolute; left: 0; top: 18px; width: 10px; height: 10px; border-radius: 50%; background: rgba(239, 68, 68, 0.4); }
+        .solution-card { background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.15); }
+        .solution-card h3 { color: #34d399; }
+        .solution-card li::before { content: ''; position: absolute; left: 0; top: 18px; width: 10px; height: 10px; border-radius: 50%; background: rgba(16, 185, 129, 0.4); }
+
+        /* Who Benefits */
+        .personas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .persona-card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 32px; transition: border-color 0.3s, transform 0.2s; }
+        .persona-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .persona-icon { font-size: 2.5em; margin-bottom: 16px; }
+        .persona-role { font-size: 1.15em; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+        .persona-title { font-size: 0.8em; color: #3b82f6; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+        .persona-pain { color: #f87171; font-size: 0.85em; margin-bottom: 12px; font-style: italic; }
+        .persona-gain { color: #94a3b8; font-size: 0.9em; }
+        .persona-gain strong { color: #34d399; }
+
+        /* Architecture */
+        .arch-layers { display: flex; gap: 0; align-items: stretch; }
+        .arch-layer { flex: 1; padding: 28px 20px; text-align: center; position: relative; }
+        .arch-layer::after { content: ''; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 12px solid; border-top: 10px solid transparent; border-bottom: 10px solid transparent; z-index: 1; }
+        .arch-layer:last-child::after { display: none; }
+        .layer-num { font-size: 0.7em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+        .layer-name { font-size: 1.05em; font-weight: 700; margin-bottom: 6px; color: #f1f5f9; }
+        .layer-time { font-size: 0.8em; margin-bottom: 8px; }
+        .layer-tag { display: inline-block; font-size: 0.7em; font-weight: 700; padding: 3px 10px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .layer-details { font-size: 0.78em; margin-top: 10px; text-align: left; }
+        .l1 { background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px 0 0 16px; }
+        .l1 .layer-num { color: #60a5fa; }
+        .l1 .layer-time { color: #60a5fa; }
+        .l1::after { border-left-color: rgba(59, 130, 246, 0.3); }
+        .l1 .layer-tag { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .l2 { background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); }
+        .l2 .layer-num { color: #a78bfa; }
+        .l2 .layer-time { color: #a78bfa; }
+        .l2::after { border-left-color: rgba(139, 92, 246, 0.3); }
+        .l2 .layer-tag { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .l3 { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .l3 .layer-num { color: #fbbf24; }
+        .l3 .layer-time { color: #fbbf24; }
+        .l3::after { border-left-color: rgba(245, 158, 11, 0.3); }
+        .l3 .layer-tag { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .l4 { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 0 16px 16px 0; }
+        .l4 .layer-num { color: #34d399; }
+        .l4 .layer-time { color: #34d399; }
+        .l4 .layer-tag { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+        /* Features */
+        .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .feature-card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 32px; transition: border-color 0.3s; }
+        .feature-card:hover { border-color: #3b82f6; }
+        .feature-badge { display: inline-block; font-size: 0.7em; font-weight: 700; padding: 3px 10px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+        .badge-core { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .badge-killer { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+        .badge-diff { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge-ai { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .feature-title { font-size: 1.15em; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+        .feature-desc { color: #94a3b8; font-size: 0.9em; margin-bottom: 16px; }
+        .feature-list { list-style: none; }
+        .feature-list li { padding: 5px 0; padding-left: 20px; position: relative; color: #cbd5e1; font-size: 0.85em; }
+        .feature-list li::before { content: ''; position: absolute; left: 0; top: 12px; width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; }
+
+        /* Competitor */
+        .comp-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 16px; overflow: hidden; border: 1px solid #1e293b; }
+        .comp-table th { background: #111827; padding: 14px 16px; text-align: center; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; border-bottom: 1px solid #1e293b; }
+        .comp-table th:first-child { text-align: left; }
+        .comp-table td { padding: 12px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); font-size: 0.88em; text-align: center; background: #0f172a; }
+        .comp-table td:first-child { text-align: left; color: #e2e8f0; font-weight: 600; }
+        .comp-table tr:last-child td { border-bottom: none; }
+        .comp-table tr:hover td { background: rgba(59, 130, 246, 0.04); }
+        .comp-highlight { background: rgba(16, 185, 129, 0.08) !important; }
+        .comp-table .check { color: #34d399; font-weight: 700; }
+        .comp-table .cross { color: #475569; }
+        .comp-table .partial { color: #fbbf24; }
+        .comp-table .price-high { color: #f87171; font-weight: 600; }
+        .comp-table .price-low { color: #34d399; font-weight: 700; }
+
+        /* Pricing */
+        .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .pricing-card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 32px 24px; text-align: center; transition: transform 0.2s, border-color 0.3s; }
+        .pricing-card:hover { transform: translateY(-4px); }
+        .pricing-card.popular { border-color: #3b82f6; position: relative; }
+        .pricing-card.popular::before { content: 'MOST POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #3b82f6; color: white; font-size: 0.7em; font-weight: 700; padding: 4px 16px; border-radius: 12px; letter-spacing: 1px; }
+        .pricing-tier { font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 8px; }
+        .pricing-name { font-size: 1.3em; font-weight: 800; color: #f1f5f9; margin-bottom: 16px; }
+        .pricing-price { margin-bottom: 20px; }
+        .pricing-price .amount { font-size: 2.5em; font-weight: 800; color: #f1f5f9; }
+        .pricing-price .period { color: #64748b; font-size: 0.85em; }
+        .pricing-price .per-org { color: #94a3b8; font-size: 0.8em; display: block; }
+        .pricing-features { list-style: none; text-align: left; margin-bottom: 24px; }
+        .pricing-features li { padding: 8px 0; padding-left: 24px; position: relative; color: #cbd5e1; font-size: 0.85em; border-bottom: 1px solid rgba(30, 41, 59, 0.3); }
+        .pricing-features li:last-child { border-bottom: none; }
+        .pricing-features li::before { content: ''; position: absolute; left: 0; top: 15px; width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; }
+
+        /* Data Model */
+        .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .model-card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 28px; }
+        .model-obj { font-size: 0.75em; font-weight: 600; color: #3b82f6; font-family: 'Courier New', monospace; margin-bottom: 6px; }
+        .model-name { font-size: 1.1em; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+        .model-desc { color: #94a3b8; font-size: 0.85em; margin-bottom: 14px; }
+        .model-fields { list-style: none; }
+        .model-fields li { padding: 3px 0; font-size: 0.8em; color: #64748b; font-family: 'Courier New', monospace; }
+        .model-fields li span { color: #94a3b8; }
+
+        /* Perspectives */
+        .persp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+        .persp-card { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; text-align: center; transition: border-color 0.3s; }
+        .persp-card:hover { border-color: #3b82f6; }
+        .persp-icon { font-size: 2.2em; margin-bottom: 10px; }
+        .persp-name { font-weight: 700; margin-bottom: 8px; color: #f1f5f9; }
+        .persp-focus { font-size: 0.8em; color: #94a3b8; }
+
+        /* Roadmap */
+        .roadmap { position: relative; }
+        .roadmap::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #1e293b; transform: translateX(-50%); }
+        .roadmap-phase { display: flex; align-items: flex-start; margin-bottom: 48px; position: relative; }
+        .roadmap-phase:nth-child(even) { flex-direction: row-reverse; }
+        .roadmap-content { width: 45%; }
+        .roadmap-phase:nth-child(odd) .roadmap-content { text-align: right; padding-right: 40px; }
+        .roadmap-phase:nth-child(even) .roadmap-content { text-align: left; padding-left: 40px; }
+        .roadmap-dot { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); width: 18px; height: 18px; border-radius: 50%; border: 3px solid; z-index: 1; }
+        .roadmap-phase:nth-child(1) .roadmap-dot { border-color: #3b82f6; background: #0a0e1a; }
+        .roadmap-phase:nth-child(2) .roadmap-dot { border-color: #8b5cf6; background: #0a0e1a; }
+        .roadmap-phase:nth-child(3) .roadmap-dot { border-color: #10b981; background: #0a0e1a; }
+        .rm-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+        .roadmap-phase:nth-child(1) .rm-label { color: #3b82f6; }
+        .roadmap-phase:nth-child(2) .rm-label { color: #8b5cf6; }
+        .roadmap-phase:nth-child(3) .rm-label { color: #10b981; }
+        .rm-title { font-size: 1.4em; font-weight: 800; color: #f1f5f9; margin-bottom: 4px; }
+        .rm-time { font-size: 0.85em; color: #64748b; margin-bottom: 14px; }
+        .rm-items { list-style: none; }
+        .rm-items li { padding: 5px 0; font-size: 0.9em; color: #cbd5e1; }
+
+        /* Build Plan */
+        .plan-phases { display: flex; flex-direction: column; gap: 24px; }
+        .plan-phase { background: #111827; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; }
+        .plan-phase-header { padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid #1e293b; }
+        .plan-phase-header:hover { background: rgba(59, 130, 246, 0.04); }
+        .plan-phase-num { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #3b82f6; margin-right: 12px; }
+        .plan-phase-title { font-size: 1.1em; font-weight: 700; color: #f1f5f9; }
+        .plan-phase-meta { display: flex; gap: 16px; align-items: center; }
+        .plan-phase-tasks { font-size: 0.8em; color: #64748b; }
+        .plan-phase-time { font-size: 0.75em; padding: 4px 12px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; font-weight: 600; }
+        .plan-tasks { padding: 0; }
+        .plan-task { padding: 14px 28px 14px 52px; border-bottom: 1px solid rgba(30, 41, 59, 0.4); position: relative; display: flex; justify-content: space-between; align-items: flex-start; }
+        .plan-task:last-child { border-bottom: none; }
+        .plan-task::before { content: ''; position: absolute; left: 28px; top: 20px; width: 12px; height: 12px; border: 2px solid #334155; border-radius: 3px; }
+        .plan-task-name { color: #e2e8f0; font-size: 0.9em; font-weight: 600; }
+        .plan-task-desc { color: #64748b; font-size: 0.8em; margin-top: 4px; }
+        .plan-task-priority { font-size: 0.7em; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+        .p0 { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .p1 { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .p2 { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+        /* UX Preview */
+        .ux-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .ux-card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; }
+        .ux-header { padding: 16px 24px; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
+        .ux-title { font-weight: 600; font-size: 0.95em; }
+        .ux-status { padding: 4px 12px; border-radius: 8px; font-size: 0.8em; font-weight: 700; }
+        .ux-pass { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .ux-fail { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .ux-body { padding: 20px 24px; }
+        .ux-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(30, 41, 59, 0.3); font-size: 0.9em; }
+        .ux-row:last-child { border-bottom: none; }
+        .ux-metric { display: flex; align-items: center; gap: 20px; padding: 16px 0; border-bottom: 1px solid rgba(30, 41, 59, 0.3); }
+        .ux-metric:last-child { border-bottom: none; }
+        .ux-metric-value { font-size: 2em; font-weight: 800; min-width: 80px; }
+        .ux-metric-label { font-size: 0.85em; color: #94a3b8; }
+        .ux-metric-sub { font-size: 0.75em; color: #64748b; margin-top: 2px; }
+        .pass { color: #34d399; }
+        .fail { color: #f87171; }
+        .warn { color: #fbbf24; }
+        .skip { color: #475569; }
+
+        /* Market Position */
+        .position-chart { background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 40px; text-align: center; }
+        .position-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; max-width: 600px; margin: 30px auto; background: #334155; border-radius: 12px; overflow: hidden; }
+        .position-quad { padding: 32px 20px; text-align: center; }
+        .quad-tl { background: rgba(59, 130, 246, 0.08); }
+        .quad-tr { background: rgba(139, 92, 246, 0.06); }
+        .quad-bl { background: rgba(100, 116, 139, 0.06); }
+        .quad-br { background: rgba(245, 158, 11, 0.06); }
+        .quad-label { font-size: 0.7em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 12px; }
+        .quad-items { font-size: 0.85em; color: #94a3b8; }
+        .quad-items .highlight { color: #34d399; font-weight: 700; font-size: 1.1em; display: block; margin-bottom: 4px; }
+        .axis-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #475569; margin-top: 16px; }
+
+        /* Test Scenarios */
+        .scenario-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #111827; border-radius: 16px; overflow: hidden; border: 1px solid #1e293b; }
+        .scenario-table th { background: #0f172a; padding: 12px 16px; text-align: left; font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; border-bottom: 1px solid #1e293b; }
+        .scenario-table td { padding: 11px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.4); font-size: 0.88em; }
+        .scenario-table tr:last-child td { border-bottom: none; }
+        .scenario-table tr:hover td { background: rgba(59, 130, 246, 0.03); }
+        .cat-tag { display: inline-block; font-size: 0.72em; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+        .cat-func { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+        .cat-edge { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+        .cat-bulk { background: rgba(139, 92, 246, 0.12); color: #a78bfa; }
+        .cat-sec { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+        .cat-regr { background: rgba(16, 185, 129, 0.12); color: #34d399; }
+        .cat-uat { background: rgba(236, 72, 153, 0.12); color: #f472b6; }
+        .cat-deploy { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+        .cat-int { background: rgba(6, 182, 212, 0.12); color: #22d3ee; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 60px 40px; color: #334155; font-size: 0.85em; border-top: 1px solid #1e293b; }
+        .footer strong { color: #64748b; }
+
+        /* Gap callout */
+        .gap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .gap-card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; padding: 28px; position: relative; overflow: hidden; }
+        .gap-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #10b981); }
+        .gap-num { font-size: 2em; font-weight: 800; color: rgba(59, 130, 246, 0.2); position: absolute; top: 12px; right: 16px; }
+        .gap-title { font-size: 1em; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+        .gap-desc { font-size: 0.85em; color: #94a3b8; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 2.2em; }
+            .ps-grid, .features-grid, .ux-grid { grid-template-columns: 1fr; }
+            .personas { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+            .persp-grid { grid-template-columns: repeat(2, 1fr); }
+            .arch-layers { flex-direction: column; }
+            .arch-layer::after { display: none; }
+            .arch-layer { border-radius: 12px !important; }
+            .model-grid { grid-template-columns: 1fr; }
+            .gap-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .roadmap::before { left: 20px; }
+            .roadmap-phase { flex-direction: column !important; }
+            .roadmap-content { width: 100% !important; text-align: left !important; padding: 0 0 0 50px !important; }
+            .roadmap-dot { left: 20px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="nav-logo">ForceGuard</div>
+    <div class="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#who">Who Benefits</a>
+        <a href="#features">Features</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#competitors">vs. Competitors</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#plan">Build Plan</a>
+        <a href="#roadmap">Roadmap</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-eyebrow">Salesforce-Native Regression Testing</div>
+    <h1>Stop deploying blind.<br><span>Start testing everything.</span></h1>
+    <p class="subtitle">The first affordable, admin-friendly regression testing framework for Salesforce. Test your Flows, Apex, objects, and permissions - automatically, on every change.</p>
+    <div class="hero-stats">
+        <div class="hero-stat"><div class="num">4</div><div class="label">Test Layers</div></div>
+        <div class="hero-stat"><div class="num">5</div><div class="label">Perspectives</div></div>
+        <div class="hero-stat"><div class="num">40+</div><div class="label">Scenarios</div></div>
+        <div class="hero-stat"><div class="num">90%</div><div class="label">Cheaper</div></div>
+    </div>
+</section>
+
+<!-- PROBLEM / SOLUTION -->
+<section class="section" id="problem">
+    <div class="container">
+        <div class="section-label">The Problem</div>
+        <div class="section-title">Testing Salesforce is broken</div>
+        <div class="section-desc">60-70% of orgs use manual spreadsheets. The rest pay $30K-150K/year for tools designed for QA teams, not admins. Flows - now the primary automation tool - are essentially untested.</div>
+        <div class="ps-grid">
+            <div class="ps-card problem-card">
+                <h3>Today's Reality</h3>
+                <ul>
+                    <li>Manual testing takes 20+ hours per release cycle</li>
+                    <li>No systematic way to test Flows, VRs, or page layouts</li>
+                    <li>Apex has a 75% coverage requirement - Flows have 0%</li>
+                    <li>Bug fixes break existing features (undetected regressions)</li>
+                    <li>Salesforce releases 3x/year and breaks your customizations</li>
+                    <li>Failures discovered by clients, not by you</li>
+                    <li>Tools exist but cost $30K-150K+/year and require QA teams</li>
+                    <li>No way to know "what will this change break?"</li>
+                </ul>
+            </div>
+            <div class="ps-card solution-card">
+                <h3>With ForceGuard</h3>
+                <ul>
+                    <li>One-click regression testing in under 15 minutes</li>
+                    <li>Test Flows, Apex, data scenarios, and permissions - all in one</li>
+                    <li>Declarative test coverage visibility (first in market)</li>
+                    <li>Auto-detect regressions and create tickets with full context</li>
+                    <li>Pre-deployment impact analysis: know what will break first</li>
+                    <li>Failures caught before production, every time</li>
+                    <li>$99/month per org, not $30K/year per team</li>
+                    <li>Built for admins, not QA engineers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- WHO BENEFITS -->
+<section class="section" id="who">
+    <div class="container">
+        <div class="section-label">Who Benefits</div>
+        <div class="section-title">Built for everyone who touches Salesforce</div>
+        <div class="section-desc">ForceGuard serves six distinct personas - from solo admins to compliance officers.</div>
+        <div class="personas">
+            <div class="persona-card">
+                <div class="persona-icon">&#9881;</div>
+                <div class="persona-role">Salesforce Admin</div>
+                <div class="persona-title">Primary User</div>
+                <div class="persona-pain">"I deployed a Flow change and it broke 3 other automations. I had no way to know."</div>
+                <div class="persona-gain"><strong>One-click regression testing</strong> after every change. Visual coverage dashboard shows what's tested and what's not. No code required.</div>
+            </div>
+            <div class="persona-card">
+                <div class="persona-icon">&#128187;</div>
+                <div class="persona-role">Salesforce Developer</div>
+                <div class="persona-title">Power User</div>
+                <div class="persona-pain">"I spend more time writing test classes for coverage than actual features."</div>
+                <div class="persona-gain"><strong>Automated test execution</strong> across all 4 layers. Code coverage tracking, bulk testing, governor limit verification. Integrates with CI/CD.</div>
+            </div>
+            <div class="persona-card">
+                <div class="persona-icon">&#128188;</div>
+                <div class="persona-role">Consulting Partner</div>
+                <div class="persona-title">Revenue Driver</div>
+                <div class="persona-pain">"Every client deployment is a risk. We test manually and it takes days."</div>
+                <div class="persona-gain"><strong>Productize your testing</strong> across client orgs. Run the same suite everywhere. Prove quality to clients with reports. Bill for testing as a service.</div>
+            </div>
+            <div class="persona-card">
+                <div class="persona-icon">&#128202;</div>
+                <div class="persona-role">Release Manager</div>
+                <div class="persona-title">Quality Gate Owner</div>
+                <div class="persona-pain">"I can't confidently approve a release. There's no regression data."</div>
+                <div class="persona-gain"><strong>Pre-deployment validation</strong> with full regression reports. Trend data over time. Approve releases with confidence, not hope.</div>
+            </div>
+            <div class="persona-card">
+                <div class="persona-icon">&#128274;</div>
+                <div class="persona-role">Compliance Officer</div>
+                <div class="persona-title">Audit Trail</div>
+                <div class="persona-pain">"Auditors ask for testing evidence. We have spreadsheets from 6 months ago."</div>
+                <div class="persona-gain"><strong>Automated audit trail</strong> of every test run. Permission testing, security verification, SOX-ready reports. Always current.</div>
+            </div>
+            <div class="persona-card">
+                <div class="persona-icon">&#128640;</div>
+                <div class="persona-role">ISV / App Builder</div>
+                <div class="persona-title">Product Quality</div>
+                <div class="persona-pain">"Our managed package works on our dev org but breaks on customer orgs."</div>
+                <div class="persona-gain"><strong>Multi-org testing</strong> for managed packages. Verify your product works across different org configurations. Catch issues before your customers do.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- MARKET GAPS -->
+<section class="section">
+    <div class="container">
+        <div class="section-label">Market Opportunity</div>
+        <div class="section-title">6 gaps no one has filled</div>
+        <div class="section-desc">We analysed every competitor. These are the critical gaps ForceGuard addresses.</div>
+        <div class="gap-grid">
+            <div class="gap-card">
+                <div class="gap-num">#1</div>
+                <div class="gap-title">No affordable admin-first testing tool</div>
+                <div class="gap-desc">Existing tools cost $30K-150K+/year and target QA teams. The 200K+ Salesforce admins have no accessible option.</div>
+            </div>
+            <div class="gap-card">
+                <div class="gap-num">#2</div>
+                <div class="gap-title">Flow testing is essentially unsolved</div>
+                <div class="gap-desc">SF's built-in Flow Tests are limited to record-triggered only. No Screen Flow, Auto-Launched, or Flow interaction testing anywhere.</div>
+            </div>
+            <div class="gap-card">
+                <div class="gap-num">#3</div>
+                <div class="gap-title">No impact analysis tied to testing</div>
+                <div class="gap-desc">Nobody connects "this field changed" to "these 5 tests are now at risk." Metadata changes are blind spots.</div>
+            </div>
+            <div class="gap-card">
+                <div class="gap-num">#4</div>
+                <div class="gap-title">Cross-automation conflicts are invisible</div>
+                <div class="gap-desc">When a trigger, flow, and validation rule all fire on the same event - nobody tests the interaction. Discovered in production.</div>
+            </div>
+            <div class="gap-card">
+                <div class="gap-num">#5</div>
+                <div class="gap-title">Declarative test coverage is 0%</div>
+                <div class="gap-desc">Apex has 75% coverage tracking. Flows? Validation rules? Page layouts? Zero visibility into what's tested.</div>
+            </div>
+            <div class="gap-card">
+                <div class="gap-num">#6</div>
+                <div class="gap-title">Massive pricing gap</div>
+                <div class="gap-desc">Nothing exists between free/limited tools and $30K+/year enterprise platforms. The entire mid-market is underserved.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ARCHITECTURE -->
+<section class="section" id="architecture">
+    <div class="container">
+        <div class="section-label">How It Works</div>
+        <div class="section-title">4-Layer Testing Architecture</div>
+        <div class="section-desc">Tests run in sequential layers. Blocking layers must pass before the next executes. This catches issues at the cheapest, fastest level first.</div>
+        <div class="arch-layers">
+            <div class="arch-layer l1">
+                <div class="layer-num">Layer 1</div>
+                <div class="layer-name">Deploy Validate</div>
+                <div class="layer-time">~30-60 seconds</div>
+                <div class="layer-tag">Blocking</div>
+                <div class="layer-details">
+                    <ul style="list-style:none; padding:0; margin-top:8px;">
+                        <li style="padding:3px 0; color:#94a3b8;">Syntax validation</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Dependency checks</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Reference integrity</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Metadata compilation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="arch-layer l2">
+                <div class="layer-num">Layer 2</div>
+                <div class="layer-name">Apex Tests</div>
+                <div class="layer-time">~2-5 minutes</div>
+                <div class="layer-tag">Blocking</div>
+                <div class="layer-details">
+                    <ul style="list-style:none; padding:0; margin-top:8px;">
+                        <li style="padding:3px 0; color:#94a3b8;">Unit test execution</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Code coverage (85%+)</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Governor limit checks</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Bulk data assertions</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="arch-layer l3">
+                <div class="layer-num">Layer 3</div>
+                <div class="layer-name">Data Scenarios</div>
+                <div class="layer-time">~5-15 minutes</div>
+                <div class="layer-tag">Verification</div>
+                <div class="layer-details">
+                    <ul style="list-style:none; padding:0; margin-top:8px;">
+                        <li style="padding:3px 0; color:#94a3b8;">End-to-end workflows</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Flow execution paths</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Cross-object logic</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Real business scenarios</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="arch-layer l4">
+                <div class="layer-num">Layer 4</div>
+                <div class="layer-name">Static Analysis</div>
+                <div class="layer-time">~1-2 minutes</div>
+                <div class="layer-tag">Quality Gate</div>
+                <div class="layer-details">
+                    <ul style="list-style:none; padding:0; margin-top:8px;">
+                        <li style="padding:3px 0; color:#94a3b8;">Security patterns</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Best practice checks</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Code smells</li>
+                        <li style="padding:3px 0; color:#94a3b8;">Complexity scoring</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- FEATURES -->
+<section class="section" id="features">
+    <div class="container">
+        <div class="section-label">Features</div>
+        <div class="section-title">Everything you need, nothing you don't</div>
+        <div class="section-desc">Core features that solve real problems, plus killer differentiators no competitor offers.</div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-badge badge-core">Core</div>
+                <div class="feature-title">Test Suite Management</div>
+                <div class="feature-desc">Organize, group, and manage test cases with tags, categories, and perspectives.</div>
+                <ul class="feature-list">
+                    <li>Create test suites per product, object, or feature</li>
+                    <li>Tag tests by perspective (Dev, Admin, PM, Designer, Client)</li>
+                    <li>Categorize: Functional, Edge Case, Bulk, Security, Regression, UAT</li>
+                    <li>Clone suites for different environments</li>
+                    <li>Import/export test definitions</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-core">Core</div>
+                <div class="feature-title">One-Click Test Execution</div>
+                <div class="feature-desc">Run your full regression suite or selected tests with a single click.</div>
+                <ul class="feature-list">
+                    <li>Run all tests, by suite, by category, or by tag</li>
+                    <li>Scheduled runs (daily, weekly, pre/post-deployment)</li>
+                    <li>Live progress indicator with streaming results</li>
+                    <li>Re-run failed tests with one click</li>
+                    <li>Queue multiple test runs</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-killer">Killer Feature</div>
+                <div class="feature-title">Flow Testing Engine</div>
+                <div class="feature-desc">The only tool that properly tests your Flows. All types, all paths, all interactions.</div>
+                <ul class="feature-list">
+                    <li>Record-Triggered, Screen, Auto-Launched, Scheduled Flows</li>
+                    <li>Flow path coverage: which decision branches are tested?</li>
+                    <li>Flow-to-Flow interaction testing</li>
+                    <li>Cross-automation conflict detection (Flow + Trigger + VR)</li>
+                    <li>Execution order verification</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-killer">Killer Feature</div>
+                <div class="feature-title">Impact Analysis Engine</div>
+                <div class="feature-desc">"What will this change break?" answered before you deploy.</div>
+                <ul class="feature-list">
+                    <li>Metadata dependency mapping across your entire org</li>
+                    <li>Pre-deployment risk scoring</li>
+                    <li>Smart test selection: auto-suggests which tests to run</li>
+                    <li>Visual impact graph of affected automations</li>
+                    <li>Change-to-test traceability</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-core">Core</div>
+                <div class="feature-title">Results Dashboard & Reports</div>
+                <div class="feature-desc">Real-time test results with trend data, drill-down, and exportable reports.</div>
+                <ul class="feature-list">
+                    <li>Health score card: overall pass rate at a glance</li>
+                    <li>30-day trend sparklines for pass rate</li>
+                    <li>Failure heatmap: which objects/processes fail most</li>
+                    <li>One-click drill-down: expected vs actual, stack traces</li>
+                    <li>PDF and CSV export for auditors and stakeholders</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-diff">Differentiator</div>
+                <div class="feature-title">Declarative Coverage Metrics</div>
+                <div class="feature-desc">The first tool to give visibility into test coverage for Flows, VRs, and page layouts.</div>
+                <ul class="feature-list">
+                    <li>"47 Flows. 12 tested. Coverage: 26%." - instant visibility</li>
+                    <li>Validation rule coverage tracking</li>
+                    <li>Coverage gaps dashboard with recommendations</li>
+                    <li>Coverage trend over time (improving or declining?)</li>
+                    <li>Gamification: encourage teams to improve scores</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-diff">Differentiator</div>
+                <div class="feature-title">Auto-Ticketing on Failure</div>
+                <div class="feature-desc">When tests fail, tickets are created automatically with full context. No copy-paste debugging.</div>
+                <ul class="feature-list">
+                    <li>New regressions get HIGH priority tickets</li>
+                    <li>Existing issues get comments (no duplicates)</li>
+                    <li>Full failure context: error, stack trace, affected metadata</li>
+                    <li>Flaky test detection after 3+ intermittent failures</li>
+                    <li>Integrates with any project management tool</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-badge badge-diff">Differentiator</div>
+                <div class="feature-title">Release Readiness Testing</div>
+                <div class="feature-desc">Run your full regression suite before and after Salesforce seasonal releases. Know if Spring/Summer/Winter broke anything.</div>
+                <ul class="feature-list">
+                    <li>Pre-release sandbox validation aligned with SF release calendar</li>
+                    <li>One-click "Release Readiness Check" for upcoming SF updates</li>
+                    <li>Baseline comparison: before vs after release results</li>
+                    <li>Priority ranking: test highest-risk areas first</li>
+                    <li>Release readiness scoring with pass/fail summary</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PERSPECTIVES -->
+<section class="section">
+    <div class="container">
+        <div class="section-label">Multi-Perspective Testing</div>
+        <div class="section-title">5 viewpoints, complete coverage</div>
+        <div class="section-desc">Every test scenario is tagged with a stakeholder perspective to ensure nothing falls through the cracks.</div>
+        <div class="persp-grid">
+            <div class="persp-card">
+                <div class="persp-icon">&#128187;</div>
+                <div class="persp-name">Developer</div>
+                <div class="persp-focus">Governor limits, bulkification, error handling, test coverage, code quality, API contracts</div>
+            </div>
+            <div class="persp-card">
+                <div class="persp-icon">&#9881;</div>
+                <div class="persp-name">Admin</div>
+                <div class="persp-focus">Deployment, configuration, activation, permissions, documentation, field dependencies</div>
+            </div>
+            <div class="persp-card">
+                <div class="persp-icon">&#128202;</div>
+                <div class="persp-name">Product Manager</div>
+                <div class="persp-focus">Features work as documented, edge cases handled, ROI delivered, user stories satisfied</div>
+            </div>
+            <div class="persp-card">
+                <div class="persp-icon">&#127912;</div>
+                <div class="persp-name">Designer</div>
+                <div class="persp-focus">LWC renders correctly, responsive layout, accessible, intuitive UX, consistent patterns</div>
+            </div>
+            <div class="persp-card">
+                <div class="persp-icon">&#128100;</div>
+                <div class="persp-name">Client</div>
+                <div class="persp-focus">Business scenarios work, data integrity, performance, real-world usage, compliance met</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- DATA MODEL -->
+<section class="section">
+    <div class="container">
+        <div class="section-label">Data Model</div>
+        <div class="section-title">Purpose-built Salesforce objects</div>
+        <div class="section-desc">Clean, well-structured custom objects that track everything from test definitions to execution results.</div>
+        <div class="model-grid">
+            <div class="model-card">
+                <div class="model-obj">Regression_Test_Suite__c</div>
+                <div class="model-name">Test Suite</div>
+                <div class="model-desc">Groups tests per product. One suite per product, versioned and org-targeted.</div>
+                <ul class="model-fields">
+                    <li><span>Name</span> (Text)</li>
+                    <li><span>Product_Name__c</span> (Text)</li>
+                    <li><span>Version__c</span> (Text)</li>
+                    <li><span>Target_Org__c</span> (Text)</li>
+                    <li><span>Description__c</span> (Long Text)</li>
+                    <li><span>Is_Active__c</span> (Checkbox)</li>
+                    <li><span>Total_Test_Cases__c</span> (Rollup)</li>
+                    <li><span>Last_Run_Date__c</span> (DateTime)</li>
+                    <li><span>Last_Run_Status__c</span> (Picklist)</li>
+                </ul>
+            </div>
+            <div class="model-card">
+                <div class="model-obj">Regression_Test_Case__c</div>
+                <div class="model-name">Test Case</div>
+                <div class="model-desc">Individual test definitions with steps, assertions, perspective tags, and priority.</div>
+                <ul class="model-fields">
+                    <li><span>Name</span> (Auto-Number)</li>
+                    <li><span>Test_Suite__c</span> (Lookup)</li>
+                    <li><span>Title__c</span> (Text)</li>
+                    <li><span>Description__c</span> (Long Text)</li>
+                    <li><span>Test_Layer__c</span> (Picklist 1-4)</li>
+                    <li><span>Category__c</span> (Picklist)</li>
+                    <li><span>Perspective__c</span> (Picklist)</li>
+                    <li><span>Priority__c</span> (Picklist P0-P2)</li>
+                    <li><span>Steps__c</span> (Long Text)</li>
+                    <li><span>Expected_Result__c</span> (Long Text)</li>
+                    <li><span>Assertion_Type__c</span> (Picklist)</li>
+                    <li><span>Is_Active__c</span> (Checkbox)</li>
+                </ul>
+            </div>
+            <div class="model-card">
+                <div class="model-obj">Regression_Test_Run__c</div>
+                <div class="model-name">Test Run</div>
+                <div class="model-desc">Execution instances. Records when tests ran, who triggered them, and the overall outcome.</div>
+                <ul class="model-fields">
+                    <li><span>Name</span> (Auto-Number)</li>
+                    <li><span>Test_Suite__c</span> (Lookup)</li>
+                    <li><span>Run_Date__c</span> (DateTime)</li>
+                    <li><span>Triggered_By__c</span> (Picklist)</li>
+                    <li><span>Status__c</span> (Picklist)</li>
+                    <li><span>Total_Tests__c</span> (Number)</li>
+                    <li><span>Passed__c</span> (Number)</li>
+                    <li><span>Failed__c</span> (Number)</li>
+                    <li><span>Skipped__c</span> (Number)</li>
+                    <li><span>Duration_Seconds__c</span> (Number)</li>
+                    <li><span>Code_Coverage__c</span> (Percent)</li>
+                </ul>
+            </div>
+            <div class="model-card">
+                <div class="model-obj">Regression_Test_Result__c</div>
+                <div class="model-name">Test Result</div>
+                <div class="model-desc">Individual pass/fail per test case per run. The granular record of what happened.</div>
+                <ul class="model-fields">
+                    <li><span>Test_Run__c</span> (Master-Detail)</li>
+                    <li><span>Test_Case__c</span> (Lookup)</li>
+                    <li><span>Status__c</span> (Picklist)</li>
+                    <li><span>Actual_Result__c</span> (Long Text)</li>
+                    <li><span>Error_Message__c</span> (Long Text)</li>
+                    <li><span>Stack_Trace__c</span> (Long Text)</li>
+                    <li><span>Duration_Ms__c</span> (Number)</li>
+                    <li><span>Layer__c</span> (Picklist)</li>
+                    <li><span>Is_Regression__c</span> (Checkbox)</li>
+                </ul>
+            </div>
+            <div class="model-card">
+                <div class="model-obj">Regression_Config__mdt</div>
+                <div class="model-name">Configuration</div>
+                <div class="model-desc">Custom Metadata Type for thresholds, org aliases, feature toggles, and settings.</div>
+                <ul class="model-fields">
+                    <li><span>Coverage_Threshold__c</span> (Percent)</li>
+                    <li><span>Org_Alias__c</span> (Text)</li>
+                    <li><span>Auto_Ticket_Enabled__c</span> (Checkbox)</li>
+                    <li><span>Flaky_Threshold__c</span> (Number)</li>
+                    <li><span>Notification_Email__c</span> (Email)</li>
+                    <li><span>Schedule_Frequency__c</span> (Picklist)</li>
+                    <li><span>Enabled_Layers__c</span> (Multi-Picklist)</li>
+                </ul>
+            </div>
+            <div class="model-card">
+                <div class="model-obj">Test_Coverage_Snapshot__c</div>
+                <div class="model-name">Coverage Snapshot</div>
+                <div class="model-desc">Point-in-time coverage metrics. Tracks improvement over time for reporting.</div>
+                <ul class="model-fields">
+                    <li><span>Snapshot_Date__c</span> (Date)</li>
+                    <li><span>Apex_Coverage__c</span> (Percent)</li>
+                    <li><span>Flow_Coverage__c</span> (Percent)</li>
+                    <li><span>VR_Coverage__c</span> (Percent)</li>
+                    <li><span>Total_Metadata__c</span> (Number)</li>
+                    <li><span>Tested_Metadata__c</span> (Number)</li>
+                    <li><span>Overall_Score__c</span> (Percent)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- UX PREVIEW -->
+<section class="section">
+    <div class="container">
+        <div class="section-label">User Experience</div>
+        <div class="section-title">What it looks like in action</div>
+        <div class="section-desc">SLDS-native Lightning components that feel like part of Salesforce. Clean, information-dense, actionable.</div>
+        <div class="ux-grid">
+            <div class="ux-card">
+                <div class="ux-header">
+                    <span class="ux-title">Dashboard - Health Overview</span>
+                    <span class="ux-status ux-pass">94% Healthy</span>
+                </div>
+                <div class="ux-body">
+                    <div class="ux-metric">
+                        <div class="ux-metric-value pass">94%</div>
+                        <div><div class="ux-metric-label">Overall Pass Rate</div><div class="ux-metric-sub">+2% from last week</div></div>
+                    </div>
+                    <div class="ux-metric">
+                        <div class="ux-metric-value" style="color:#f1f5f9;">156</div>
+                        <div><div class="ux-metric-label">Total Test Cases</div><div class="ux-metric-sub">Across 4 products, 12 suites</div></div>
+                    </div>
+                    <div class="ux-metric">
+                        <div class="ux-metric-value fail">3</div>
+                        <div><div class="ux-metric-label">Active Failures</div><div class="ux-metric-sub">2 regressions, 1 flaky</div></div>
+                    </div>
+                    <div class="ux-metric">
+                        <div class="ux-metric-value warn">67%</div>
+                        <div><div class="ux-metric-label">Flow Coverage</div><div class="ux-metric-sub">32 of 47 Flows tested</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ux-card">
+                <div class="ux-header">
+                    <span class="ux-title">Latest Run - Audit (SOX/IPE)</span>
+                    <span class="ux-status ux-pass">PASSED</span>
+                </div>
+                <div class="ux-body">
+                    <div class="ux-row"><span>Layer 1: Deploy Validate</span><span class="pass" style="font-weight:700;">PASS (42s)</span></div>
+                    <div class="ux-row"><span>Layer 2: Apex Tests (18 methods)</span><span class="pass" style="font-weight:700;">PASS (3m 12s)</span></div>
+                    <div class="ux-row"><span>Layer 3: Data Scenarios (12 tests)</span><span class="pass" style="font-weight:700;">PASS (8m 45s)</span></div>
+                    <div class="ux-row"><span>Layer 4: Static Analysis</span><span class="pass" style="font-weight:700;">PASS (1m 18s)</span></div>
+                    <div class="ux-row" style="border-top: 1px solid #334155; padding-top: 14px; margin-top: 6px;">
+                        <span style="font-weight:700; color:#f1f5f9;">Coverage: 92%</span>
+                        <span style="font-weight:700; color:#f1f5f9;">13m 57s total</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ux-card">
+                <div class="ux-header">
+                    <span class="ux-title">Latest Run - Opp Auto Assignment</span>
+                    <span class="ux-status ux-fail">1 FAILURE</span>
+                </div>
+                <div class="ux-body">
+                    <div class="ux-row"><span>Layer 1: Deploy Validate</span><span class="pass" style="font-weight:700;">PASS (38s)</span></div>
+                    <div class="ux-row"><span>Layer 2: Apex Tests (11/12)</span><span class="fail" style="font-weight:700;">FAIL (4m 02s)</span></div>
+                    <div class="ux-row"><span>Layer 3: Data Scenarios</span><span class="skip" style="font-weight:700;">SKIPPED</span></div>
+                    <div class="ux-row"><span>Layer 4: Static Analysis</span><span class="pass" style="font-weight:700;">PASS (1m 05s)</span></div>
+                    <div class="ux-row" style="border-top: 1px solid #334155; padding-top: 14px; margin-top: 6px;">
+                        <span class="fail" style="font-weight:700;">Ticket auto-created: WP#891</span>
+                        <span style="font-weight:700; color:#f1f5f9;">5m 45s total</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ux-card">
+                <div class="ux-header">
+                    <span class="ux-title">Impact Analysis Preview</span>
+                    <span class="ux-status" style="background:rgba(245,158,11,0.15);color:#fbbf24;">3 AT RISK</span>
+                </div>
+                <div class="ux-body">
+                    <div style="color:#94a3b8;font-size:0.85em;margin-bottom:14px;">Proposed change: <strong style="color:#f1f5f9;">Modify Account.Industry field picklist values</strong></div>
+                    <div class="ux-row"><span>Flow: Account Territory Assignment</span><span class="fail" style="font-weight:600;">HIGH RISK</span></div>
+                    <div class="ux-row"><span>VR: Account Industry Required</span><span class="warn" style="font-weight:600;">MEDIUM RISK</span></div>
+                    <div class="ux-row"><span>Trigger: AccountTriggerHandler</span><span class="warn" style="font-weight:600;">MEDIUM RISK</span></div>
+                    <div class="ux-row"><span>LWC: accountDashboard</span><span style="color:#64748b;font-weight:600;">LOW RISK</span></div>
+                    <div class="ux-row" style="border-top: 1px solid #334155; padding-top: 14px; margin-top: 6px;">
+                        <span style="color:#fbbf24;font-weight:700;">Recommended: Run 8 targeted tests</span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- COMPETITORS -->
+<section class="section" id="competitors">
+    <div class="container">
+        <div class="section-label">Competitive Landscape</div>
+        <div class="section-title">How ForceGuard compares</div>
+        <div class="section-desc">We occupy the only empty quadrant: high technical depth at an affordable price.</div>
+        <table class="comp-table">
+            <thead>
+                <tr>
+                    <th style="width:200px;">Feature</th>
+                    <th style="background:rgba(16,185,129,0.08); color:#34d399;">ForceGuard</th>
+                    <th>Copado</th>
+                    <th>Provar</th>
+                    <th>ACCELQ</th>
+                    <th>testRigor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Salesforce-Native</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="check">Yes</td>
+                    <td class="partial">Desktop</td>
+                    <td class="check">Yes</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Admin-Friendly</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="cross">No</td>
+                    <td class="partial">Partial</td>
+                    <td class="partial">Partial</td>
+                    <td class="check">Yes</td>
+                </tr>
+                <tr>
+                    <td>Flow Testing</td>
+                    <td class="comp-highlight check">Deep</td>
+                    <td class="partial">Partial</td>
+                    <td class="check">Yes</td>
+                    <td class="partial">Partial</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Impact Analysis</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Declarative Coverage</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Release Readiness</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="partial">Partial</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Auto-Ticketing</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="partial">Partial</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                </tr>
+                <tr>
+                    <td>Free Tier</td>
+                    <td class="comp-highlight check">Yes</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="cross">No</td>
+                    <td class="check">Yes</td>
+                </tr>
+                <tr>
+                    <td>Annual Cost</td>
+                    <td class="comp-highlight price-low">$0-6K</td>
+                    <td class="price-high">$50K-150K+</td>
+                    <td class="price-high">$30K-80K+</td>
+                    <td class="price-high">$30K-70K+</td>
+                    <td class="price-low">$0-11K</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Position Chart -->
+        <div class="position-chart" style="margin-top:40px;">
+            <div style="font-size:1.1em; font-weight:700; color:#f1f5f9; margin-bottom:4px;">Market Positioning</div>
+            <div style="font-size:0.85em; color:#64748b;">ForceGuard occupies the uncontested quadrant</div>
+            <div class="position-grid">
+                <div class="position-quad quad-tl">
+                    <div class="quad-label">High Depth + Affordable</div>
+                    <div class="quad-items"><span class="highlight">ForceGuard</span>No current competitor</div>
+                </div>
+                <div class="position-quad quad-tr">
+                    <div class="quad-label">High Depth + Expensive</div>
+                    <div class="quad-items">Copado<br>Provar<br>ACCELQ</div>
+                </div>
+                <div class="position-quad quad-bl">
+                    <div class="quad-label">Low Depth + Affordable</div>
+                    <div class="quad-items">testRigor<br>Manual testing</div>
+                </div>
+                <div class="position-quad quad-br">
+                    <div class="quad-label">Low Depth + Expensive</div>
+                    <div class="quad-items">Leapwork<br>Generic tools</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+    <div class="container">
+        <div class="section-label">Pricing</div>
+        <div class="section-title">Per-org pricing, not per-user</div>
+        <div class="section-desc">One price, whole team benefits. No seat negotiations, no per-user licensing. 90% cheaper than alternatives.</div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-tier">Free</div>
+                <div class="pricing-name">Starter</div>
+                <div class="pricing-price">
+                    <span class="amount">$0</span>
+                    <span class="period">/month</span>
+                    <span class="per-org">forever free</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>10 test cases</li>
+                    <li>1 test suite</li>
+                    <li>Manual execution only</li>
+                    <li>Basic pass/fail reporting</li>
+                    <li>Single org</li>
+                    <li>Community support</li>
+                </ul>
+            </div>
+            <div class="pricing-card popular">
+                <div class="pricing-tier">Tier 1</div>
+                <div class="pricing-name">Professional</div>
+                <div class="pricing-price">
+                    <span class="amount">$99</span>
+                    <span class="period">/month</span>
+                    <span class="per-org">per org</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>100 test cases</li>
+                    <li>5 test suites</li>
+                    <li>Scheduled runs</li>
+                    <li>Trend reporting & export</li>
+                    <li>Email notifications</li>
+                    <li>Flow testing engine</li>
+                    <li>Standard support</li>
+                </ul>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-tier">Tier 2</div>
+                <div class="pricing-name">Business</div>
+                <div class="pricing-price">
+                    <span class="amount">$249</span>
+                    <span class="period">/month</span>
+                    <span class="per-org">per org</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>Unlimited test cases</li>
+                    <li>Unlimited suites</li>
+                    <li>Impact analysis engine</li>
+                    <li>CI/CD integration & API</li>
+                    <li>Declarative coverage metrics</li>
+                    <li>Auto-ticketing</li>
+                    <li>Slack notifications</li>
+                    <li>Priority support</li>
+                </ul>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-tier">Tier 3</div>
+                <div class="pricing-name">Enterprise</div>
+                <div class="pricing-price">
+                    <span class="amount">$499</span>
+                    <span class="period">/month</span>
+                    <span class="per-org">per org</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>Everything in Business</li>
+                    <li>Multi-org support</li>
+                    <li>Release readiness scoring</li>
+                    <li>Cross-automation conflict detection</li>
+                    <li>Custom integrations</li>
+                    <li>SSO / advanced security</li>
+                    <li>Dedicated support</li>
+                    <li>Onboarding assistance</li>
+                </ul>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:24px; color:#64748b; font-size:0.85em;">20% discount for annual billing. All tiers include unlimited users.</div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- TEST SCENARIOS -->
+<section class="section">
+    <div class="container">
+        <div class="section-label">Test Scenarios</div>
+        <div class="section-title">40+ scenarios across 4 products</div>
+        <div class="section-desc">Starting with the Audit (SOX/IPE) product, expanding to all products. Each scenario is categorized, prioritized, and tagged with a perspective.</div>
+        <table class="scenario-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>Test Scenario</th>
+                    <th>Perspective</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>AUD-FUNC-001</td><td>Audit (SOX/IPE)</td><td>Monthly snapshot captures all active users</td><td>PM</td><td><span class="cat-tag cat-func">Functional</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>AUD-FUNC-002</td><td>Audit (SOX/IPE)</td><td>Terminated user detected within 24hrs of HR import</td><td>Client</td><td><span class="cat-tag cat-func">Functional</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>AUD-FUNC-003</td><td>Audit (SOX/IPE)</td><td>Profile change triggers finding with before/after</td><td>Admin</td><td><span class="cat-tag cat-func">Functional</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>AUD-SEC-004</td><td>Audit (SOX/IPE)</td><td>Only Audit_Administrator can view findings</td><td>Admin</td><td><span class="cat-tag cat-sec">Security</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>AUD-BULK-005</td><td>Audit (SOX/IPE)</td><td>Snapshot handles 2000+ users without governor limits</td><td>Developer</td><td><span class="cat-tag cat-bulk">Bulk</span></td><td class="warn" style="font-weight:600;">P1</td></tr>
+                <tr><td>AUD-EDGE-006</td><td>Audit (SOX/IPE)</td><td>Handle user with no profile assignment</td><td>Developer</td><td><span class="cat-tag cat-edge">Edge Case</span></td><td class="warn" style="font-weight:600;">P1</td></tr>
+                <tr><td>AUD-SEC-007</td><td>Audit (SOX/IPE)</td><td>SoD violation detected for conflicting permissions</td><td>Client</td><td><span class="cat-tag cat-sec">Security</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>AUD-INT-008</td><td>Audit (SOX/IPE)</td><td>PDF report generated with correct data and branding</td><td>Client</td><td><span class="cat-tag cat-int">Integration</span></td><td class="warn" style="font-weight:600;">P1</td></tr>
+                <tr><td>AUD-REGR-009</td><td>Audit (SOX/IPE)</td><td>All Flows activate without errors after deployment</td><td>Admin</td><td><span class="cat-tag cat-regr">Regression</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>AUD-UAT-010</td><td>Audit (SOX/IPE)</td><td>Compliance officer generates SOX report for auditors</td><td>Client</td><td><span class="cat-tag cat-uat">UAT</span></td><td class="warn" style="font-weight:600;">P1</td></tr>
+                <tr><td>FTG-FUNC-001</td><td>Flow Test Generator</td><td>Generate test for Record-Triggered After Save flow</td><td>Developer</td><td><span class="cat-tag cat-func">Functional</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>CDD-FUNC-001</td><td>Contact Dup Detection</td><td>Exact email match blocks duplicate creation</td><td>Client</td><td><span class="cat-tag cat-func">Functional</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+                <tr><td>OAA-FUNC-001</td><td>Opp Auto Assignment</td><td>Round-robin distributes evenly across 10 reps</td><td>PM</td><td><span class="cat-tag cat-func">Functional</span></td><td class="fail" style="font-weight:700;">P0</td></tr>
+            </tbody>
+        </table>
+        <div style="text-align:center; margin-top:16px; color:#64748b; font-size:0.85em;">Showing 13 of 40+ scenarios. Full list defined per product at build time.</div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- BUILD PLAN -->
+<section class="section" id="plan">
+    <div class="container">
+        <div class="section-label">Build Plan</div>
+        <div class="section-title">7 phases, 38 tasks, built to ship</div>
+        <div class="section-desc">Each phase has clear deliverables, priorities, and acceptance criteria. Tasks are sequenced to deliver value incrementally.</div>
+        <div class="plan-phases">
+
+            <!-- Phase 1 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 1</span><span class="plan-phase-title">Foundation & Project Setup</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">4 tasks</span><span class="plan-phase-time">Week 1</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Create SFDX project structure</div><div class="plan-task-desc">sfdx-project.json, force-app directory, namespace config, .gitignore, scratch org definition</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Create package.xml manifest</div><div class="plan-task-desc">All custom objects, classes, LWC, flows, custom metadata, permission sets, tabs, layouts</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Set up GitHub repository</div><div class="plan-task-desc">Initial commit, branch protection, README with product overview, DEPLOYMENT.md</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Create project documentation</div><div class="plan-task-desc">CLAUDE.md, TESTING_GUIDE.md, directory structure docs, coding standards</div></div><span class="plan-task-priority p1">P1</span></div>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 2</span><span class="plan-phase-title">Custom Objects & Data Model</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">6 tasks</span><span class="plan-phase-time">Week 1-2</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Build Regression_Test_Suite__c</div><div class="plan-task-desc">9 fields: Name, Product, Version, Target Org, Description, Is_Active, Total Tests (rollup), Last Run Date, Last Run Status</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build Regression_Test_Case__c</div><div class="plan-task-desc">12 fields: Suite lookup, Title, Description, Layer, Category, Perspective, Priority, Steps, Expected Result, Assertion Type, Is_Active, auto-number</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build Regression_Test_Run__c</div><div class="plan-task-desc">11 fields: Suite lookup, Run Date, Triggered By, Status, Total/Passed/Failed/Skipped counts, Duration, Code Coverage</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build Regression_Test_Result__c</div><div class="plan-task-desc">9 fields: Run (master-detail), Case lookup, Status, Actual Result, Error Message, Stack Trace, Duration, Layer, Is_Regression flag</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build Regression_Config__mdt</div><div class="plan-task-desc">7 fields: Coverage Threshold, Org Alias, Auto-Ticket toggle, Flaky Threshold, Notification Email, Schedule Frequency, Enabled Layers</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build Test_Coverage_Snapshot__c + validation rules</div><div class="plan-task-desc">Coverage snapshot object (7 fields) + all cross-object validation rules, relationship constraints, field-level security</div></div><span class="plan-task-priority p1">P1</span></div>
+                </div>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 3</span><span class="plan-phase-title">Core Framework Engine (Apex)</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">6 tasks</span><span class="plan-phase-time">Week 2-3</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Build RegressionTestRunner (orchestrator)</div><div class="plan-task-desc">Main entry point. Accepts suite ID, queries active cases, executes layers in sequence, creates Run record, coordinates all components. Handles blocking layer logic.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build RegressionTestExecutor (per-layer executor)</div><div class="plan-task-desc">Executes individual test cases. Layer 1: sf deploy validate. Layer 2: sf apex run test. Layer 3: anonymous apex + data queries. Layer 4: code analyzer. Creates Result records.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build RegressionTestAssertion (assertion framework)</div><div class="plan-task-desc">Reusable assertion methods: assertEquals, assertContains, assertRecordExists, assertFieldValue, assertCount, assertCoverage. Returns structured pass/fail with context.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build RegressionTestReporter (report generator)</div><div class="plan-task-desc">Generates markdown summary, PDF export, email digest. Includes: per-layer results, failure details, coverage stats, trend comparison with previous run.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build RegressionTestScheduler (schedulable batch)</div><div class="plan-task-desc">Implements Schedulable + Batchable. Reads Regression_Config__mdt for frequency. Supports daily, weekly, and custom cron expressions. Handles bulk suites.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Write test classes (90%+ coverage)</div><div class="plan-task-desc">Test classes for all 5 Apex components. Positive, negative, bulk (200+), and error scenarios. Mock callouts where needed. Assert all DML operations.</div></div><span class="plan-task-priority p0">P0</span></div>
+                </div>
+            </div>
+
+            <!-- Phase 4 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 4</span><span class="plan-phase-title">Audit Test Scenarios</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">7 tasks</span><span class="plan-phase-time">Week 3-4</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Create Audit test suite record + seed data</div><div class="plan-task-desc">Regression_Test_Suite__c for Audit product. Seed all 10 test case records with steps, assertions, perspectives, and priorities.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Define Layer 1 deployment validation tests</div><div class="plan-task-desc">Verify all 38+ Audit classes, 8 objects, 7 LWC, 8 Flows deploy without errors. Check dependencies and references resolve.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Define Layer 2 Apex test execution scenarios</div><div class="plan-task-desc">Run all Audit test classes, verify 85%+ coverage, check for governor limit violations in batch jobs, verify error handling.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Define Layer 3 data scenario tests</div><div class="plan-task-desc">End-to-end: create snapshot, import terminations, detect profile changes, generate findings, produce PDF report. Verify all data flows.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Define Layer 4 static analysis tests</div><div class="plan-task-desc">Run sf code-analyzer on all Audit Apex. Check for security issues, hardcoded IDs, missing null checks, SOQL in loops.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Define edge case and bulk test scenarios</div><div class="plan-task-desc">2000+ user snapshots, null profile users, duplicate terminations, concurrent batch runs, empty org scenarios.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Define security and permission tests</div><div class="plan-task-desc">Verify 3 permission sets grant correct access. Test CRUD/FLS enforcement. Verify sharing rules. Test as different user profiles.</div></div><span class="plan-task-priority p0">P0</span></div>
+                </div>
+            </div>
+
+            <!-- Phase 5 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 5</span><span class="plan-phase-title">Lightning UI (LWC Dashboard)</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">4 tasks</span><span class="plan-phase-time">Week 4-5</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Build regressionTestDashboard LWC</div><div class="plan-task-desc">Main dashboard: health score card, trend sparkline, failure heatmap, recent runs table, coverage gaps indicator. SLDS-compliant, responsive. Platform events for real-time updates.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build testSuiteManager LWC</div><div class="plan-task-desc">CRUD for test suites and cases. Inline editing, drag-and-drop reorder, bulk activate/deactivate, filter by category/perspective/priority. Wizard for new test creation.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build testRunViewer LWC</div><div class="plan-task-desc">List of all test runs with status badges. Click to expand: per-layer results, duration, pass/fail counts. "Re-run Failed" and "Run All" action buttons.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build testResultDetail LWC</div><div class="plan-task-desc">Failure drill-down: expected vs actual, error message, stack trace, related metadata. "Mark as Known Issue" toggle. Link to auto-created ticket.</div></div><span class="plan-task-priority p1">P1</span></div>
+                </div>
+            </div>
+
+            <!-- Phase 6 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 6</span><span class="plan-phase-title">Automation & Reporting</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">5 tasks</span><span class="plan-phase-time">Week 5-6</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Build auto-findings Flow on test failure</div><div class="plan-task-desc">Record-triggered Flow: when Result__c.Status = 'Failed' AND Is_Regression = true, create a finding/ticket with full context (error, stack trace, test case details).</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build email notification system</div><div class="plan-task-desc">Email on run completion: summary with pass/fail, failures highlighted, link to dashboard. Configurable recipients via Regression_Config__mdt.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build PDF and markdown report generation</div><div class="plan-task-desc">Visualforce PDF: branded report with charts, per-layer breakdown, failure details, trend comparison. Markdown for developer consumption.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build scheduled test run automation</div><div class="plan-task-desc">Schedulable class reads config, triggers suites on schedule. Platform event fires on completion. Handles failures gracefully with retry logic.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Build external integration callout</div><div class="plan-task-desc">REST callout to project management tools (OpenProject, Jira) for auto-ticket creation. Named Credential-based auth. Handles rate limits and errors.</div></div><span class="plan-task-priority p2">P2</span></div>
+                </div>
+            </div>
+
+            <!-- Phase 7 -->
+            <div class="plan-phase">
+                <div class="plan-phase-header">
+                    <div><span class="plan-phase-num">Phase 7</span><span class="plan-phase-title">Documentation & Packaging</span></div>
+                    <div class="plan-phase-meta"><span class="plan-phase-tasks">6 tasks</span><span class="plan-phase-time">Week 6-7</span></div>
+                </div>
+                <div class="plan-tasks">
+                    <div class="plan-task"><div><div class="plan-task-name">Write Installation Guide</div><div class="plan-task-desc">Step-by-step: deploy to org, assign permission sets, configure custom metadata, verify installation. Troubleshooting section.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Write Configuration Guide</div><div class="plan-task-desc">How to set thresholds, enable layers, configure notifications, set up schedules, connect integrations. With screenshots.</div></div><span class="plan-task-priority p0">P0</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Write User & Admin Guide</div><div class="plan-task-desc">How to use the dashboard, manage suites, view results, interpret reports, handle failures. Role-based sections.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Write Test Writing Guide</div><div class="plan-task-desc">How to create new test cases, write assertions, tag perspectives, set priorities. Templates and examples for each category.</div></div><span class="plan-task-priority p1">P1</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Create Gumroad/AppExchange listing</div><div class="plan-task-desc">Product copy, feature list, screenshots, pricing table, FAQ, comparison chart. Optimized for conversion.</div></div><span class="plan-task-priority p2">P2</span></div>
+                    <div class="plan-task"><div><div class="plan-task-name">Package as deployable zip</div><div class="plan-task-desc">Unlocked package or unmanaged package. Version 1.0. Include: all metadata, seed data scripts, post-install configuration guide.</div></div><span class="plan-task-priority p0">P0</span></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ROADMAP -->
+<section class="section" id="roadmap">
+    <div class="container">
+        <div class="section-label">Growth Roadmap</div>
+        <div class="section-title">From internal tool to product</div>
+        <div class="section-desc">Three phases to go from testing our own products to a revenue-generating SaaS.</div>
+        <div class="roadmap">
+            <div class="roadmap-phase">
+                <div class="roadmap-content">
+                    <div class="rm-label">Phase 1 - Internal Use</div>
+                    <div class="rm-title">Prove the Concept</div>
+                    <div class="rm-time">Months 1-3</div>
+                    <ul class="rm-items">
+                        <li>Test our 4 Salesforce products</li>
+                        <li>40+ test scenarios fully automated</li>
+                        <li>Agent execution pipeline operational</li>
+                        <li>Auto-ticketing on failures</li>
+                        <li>Validate with real bugs caught</li>
+                        <li>Iterate on UX based on our own usage</li>
+                    </ul>
+                </div>
+                <div class="roadmap-dot"></div>
+            </div>
+            <div class="roadmap-phase">
+                <div class="roadmap-content">
+                    <div class="rm-label">Phase 2 - Templatize</div>
+                    <div class="rm-title">Make It Reusable</div>
+                    <div class="rm-time">Months 4-6</div>
+                    <ul class="rm-items">
+                        <li>Generic framework: works for any SF product</li>
+                        <li>Metadata-driven test generation from org schema</li>
+                        <li>Setup wizard for new products</li>
+                        <li>80% of tests auto-generated from metadata</li>
+                        <li>Impact analysis engine v1</li>
+                        <li>Beta testing with 5-10 partner orgs</li>
+                    </ul>
+                </div>
+                <div class="roadmap-dot"></div>
+            </div>
+            <div class="roadmap-phase">
+                <div class="roadmap-content">
+                    <div class="rm-label">Phase 3 - Product Launch</div>
+                    <div class="rm-title">Ship & Scale</div>
+                    <div class="rm-time">Months 7-12</div>
+                    <ul class="rm-items">
+                        <li>Gumroad + AppExchange listing</li>
+                        <li>SaaS dashboard for multi-org clients</li>
+                        <li>Multi-org support with central reporting</li>
+                        <li>Target: 100 customers in year 1</li>
+                        <li>Target: $30K MRR</li>
+                        <li>Community edition drives adoption</li>
+                    </ul>
+                </div>
+                <div class="roadmap-dot"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+    <strong>ForceGuard</strong> &mdash; Salesforce-Native Regression Testing Framework<br>
+    Product Vision &amp; Build Plan &mdash; February 2026<br>
+    <span style="color:#475569;">Salesforce Solutions</span>
+</div>
+
+</body>
+</html>

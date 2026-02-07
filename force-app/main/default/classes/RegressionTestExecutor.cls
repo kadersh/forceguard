@@ -412,9 +412,11 @@ public with sharing class RegressionTestExecutor {
             when 'Coverage Threshold' {
                 // Steps: "ClassName"
                 // Expected: minimum coverage percentage
+                // NOTE: For MVP, coverage data (actualCoverage) is null until Tooling API integration is built
                 String className = parts.size() > 0 ? parts[0] : '';
                 Decimal minPercent = String.isNotBlank(expected) ? Decimal.valueOf(expected) : 75;
-                return RegressionTestAssertion.assertCoverage(className, minPercent);
+                Decimal actualCoverage = null; // TODO: Fetch via Tooling API in future phase
+                return RegressionTestAssertion.assertCoverage(className, actualCoverage, minPercent);
             }
             when 'No Error' {
                 // Steps: "TestClassName"
