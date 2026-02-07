@@ -287,6 +287,59 @@ public with sharing class RegressionDashboardController {
     }
 
     /**
+     * Returns the current schedule status for ForceGuard jobs.
+     * @return Map with isScheduled, jobName, frequency, nextFireTime
+     */
+    @AuraEnabled
+    public static Map<String, Object> getScheduleStatus() {
+        try {
+            Map<String, Object> status = new Map<String, Object>();
+            List<CronTrigger> jobs = [
+                SELECT CronJobDetail.Name, State, NextFireTime, CronExpression
+                FROM CronTrigger
+                WHERE CronJobDetail.Name LIKE 'ForceGuard%'
+                WITH USER_MODE
+                ORDER BY NextFireTime ASC
+                LIMIT 1
+            ];
+
+            if (jobs.isEmpty()) {
+                status.put('isScheduled', false);
+                status.put('jobName', null);
+                status.put('frequency', null);
+                status.put('nextFireTime', null);
+            } else {
+                CronTrigger job = jobs[0];
+                String jobName = job.CronJobDetail.Name;
+                String frequency = 'Custom';
+                if (jobName.contains('Daily')) frequency = 'Daily';
+                else if (jobName.contains('Weekly')) frequency = 'Weekly';
+                else if (jobName.contains('Monthly')) frequency = 'Monthly';
+
+                status.put('isScheduled', true);
+                status.put('jobName', jobName);
+                status.put('frequency', frequency);
+                status.put('nextFireTime', job.NextFireTime);
+            }
+            return status;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    /**
+     * Removes all scheduled ForceGuard jobs.
+     */
+    @AuraEnabled
+    public static void unscheduleRuns() {
+        try {
+            RegressionTestScheduler.unschedule();
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    /**
      * Schedules automated test runs at the specified frequency.
      * @param frequency One of: daily, weekly, monthly
      * @param suiteId Reserved for future per-suite scheduling (currently unused)

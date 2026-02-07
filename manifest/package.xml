@@ -7,6 +7,7 @@
         <members>Regression_Test_Case__c</members>
         <members>Regression_Test_Run__c</members>
         <members>Regression_Test_Result__c</members>
+        <members>Regression_Finding__c</members>
         <members>Test_Coverage_Snapshot__c</members>
         <members>Regression_Config__mdt</members>
         <members>ForceGuard_Test_Complete__e</members>
@@ -19,10 +20,40 @@
         <name>ApexClass</name>
     </types>
 
+    <!-- Apex Triggers -->
+    <types>
+        <members>*</members>
+        <name>ApexTrigger</name>
+    </types>
+
+    <!-- Custom Permissions -->
+    <types>
+        <members>Bypass_All_Automation</members>
+        <name>CustomPermission</name>
+    </types>
+
     <!-- Lightning Web Components -->
     <types>
         <members>*</members>
         <name>LightningComponentBundle</name>
+    </types>
+
+    <!-- Visualforce Pages -->
+    <types>
+        <members>*</members>
+        <name>ApexPage</name>
+    </types>
+
+    <!-- Lightning Applications -->
+    <types>
+        <members>ForceGuard</members>
+        <name>CustomApplication</name>
+    </types>
+
+    <!-- Named Credentials -->
+    <types>
+        <members>ForceGuard_Ticket_System</members>
+        <name>NamedCredential</name>
     </types>
 
     <!-- Flows -->

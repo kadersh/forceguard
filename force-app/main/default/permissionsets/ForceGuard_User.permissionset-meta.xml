@@ -1,8 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Grants full CRUD and FLS access to all ForceGuard custom objects. Required for standard users to operate the ForceGuard dashboard and test management features.</description>
+    <description>Grants full access to all ForceGuard components: custom objects, fields, tabs, Visualforce pages, Lightning app, and custom permissions. Required for users to operate ForceGuard.</description>
     <hasActivationRequired>false</hasActivationRequired>
     <label>ForceGuard User</label>
+
+    <!-- Application Visibility -->
+    <applicationVisibilities>
+        <application>ForceGuard</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+
+    <!-- Tab Visibility -->
+    <tabSettings>
+        <tab>ForceGuard_Dashboard</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Regression_Test_Suite__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Regression_Test_Run__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Regression_Finding__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+
+    <!-- Visualforce Page Access -->
+    <pageAccesses>
+        <apexPage>ForceGuardTestReport</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+
+    <!-- Note: Bypass_All_Automation is NOT included here by design.
+         It should only be assigned to users who need to bypass triggers
+         (e.g., data migration users). Regular ForceGuard users need triggers active. -->
+
+    <!-- Regression_Finding__c: CRUD -->
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Regression_Finding__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
 
     <!-- Regression_Test_Suite__c: CRUD -->
     <objectPermissions>
@@ -275,6 +320,73 @@
         <readable>true</readable>
     </fieldPermissions>
 
+    <!-- ===== Regression_Finding__c Field Permissions ===== -->
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Test_Case__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Test_Run__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Test_Result__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Suite_Name__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Error_Message__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Expected_Result__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Actual_Result__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Layer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Category__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Priority__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Finding_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Finding__c.External_Ticket_Id__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+
     <!-- ===== Regression_Test_Result__c Field Permissions ===== -->
     <!-- Note: Test_Run__c is Master-Detail, not included in FLS -->
     <fieldPermissions>
@@ -326,6 +438,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Regression_Test_Result__c.Is_Known_Issue__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Regression_Test_Result__c.External_Ticket_Id__c</field>
         <readable>true</readable>
     </fieldPermissions>
 

@@ -47,6 +47,15 @@
     <!-- Suite List -->
     <lightning-card title="Test Suites" icon-name="utility:table">
         <div slot="actions">
+            <template lwc:if={isCurrentlyScheduled}>
+                <lightning-badge label={scheduleLabel} class="slds-m-right_small"></lightning-badge>
+                <lightning-button
+                    label="Unschedule"
+                    icon-name="utility:close"
+                    onclick={handleUnschedule}
+                    class="slds-m-right_small"
+                ></lightning-button>
+            </template>
             <lightning-button
                 label="Schedule Runs"
                 icon-name="utility:clock"

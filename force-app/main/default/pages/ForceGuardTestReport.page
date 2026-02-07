@@ -1,0 +1,338 @@
+<apex:page controller="ForceGuardReportController" renderAs="pdf" applyBodyTag="false" applyHtmlTag="false" showHeader="false">
+<html>
+<head>
+<style type="text/css">
+    @page {
+        size: A4;
+        margin: 20mm 15mm 25mm 15mm;
+        @bottom-center {
+            content: "Page " counter(page) " of " counter(pages);
+            font-size: 8pt;
+            color: #666666;
+        }
+    }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        color: #333333;
+        line-height: 1.4;
+    }
+    .report-header {
+        background-color: #0070d2;
+        color: #ffffff;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+    .report-header h1 {
+        font-size: 18pt;
+        margin: 0 0 5px 0;
+    }
+    .report-header .subtitle {
+        font-size: 11pt;
+        opacity: 0.9;
+    }
+    .section-title {
+        font-size: 14pt;
+        color: #0070d2;
+        border-bottom: 2px solid #0070d2;
+        padding-bottom: 4px;
+        margin: 20px 0 10px 0;
+    }
+    .summary-box {
+        background-color: #f4f6f9;
+        border: 1px solid #d8dde6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .summary-grid {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .summary-grid td {
+        padding: 6px 10px;
+        vertical-align: top;
+        width: 33%;
+    }
+    .summary-label {
+        font-size: 9pt;
+        color: #706e6b;
+        text-transform: uppercase;
+    }
+    .summary-value {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #333333;
+    }
+    .summary-value.pass { color: #04844b; }
+    .summary-value.fail { color: #c23934; }
+    .summary-value.warn { color: #ff9a3c; }
+    table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15px;
+    }
+    table.data-table th {
+        background-color: #0070d2;
+        color: #ffffff;
+        padding: 8px 10px;
+        text-align: left;
+        font-size: 9pt;
+        text-transform: uppercase;
+    }
+    table.data-table td {
+        padding: 6px 10px;
+        border-bottom: 1px solid #d8dde6;
+        font-size: 9pt;
+    }
+    table.data-table tr:nth-child(even) {
+        background-color: #f4f6f9;
+    }
+    table.data-table tr.failure-row {
+        background-color: #fef1f1;
+    }
+    table.data-table tr.regression-row {
+        background-color: #fce4e4;
+        font-weight: bold;
+    }
+    .status-passed {
+        color: #04844b;
+        font-weight: bold;
+    }
+    .status-failed {
+        color: #c23934;
+        font-weight: bold;
+    }
+    .status-skipped {
+        color: #706e6b;
+        font-style: italic;
+    }
+    .regression-badge {
+        background-color: #c23934;
+        color: #ffffff;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 8pt;
+        font-weight: bold;
+    }
+    .footer-text {
+        font-size: 8pt;
+        color: #706e6b;
+        text-align: center;
+        margin-top: 30px;
+        border-top: 1px solid #d8dde6;
+        padding-top: 10px;
+    }
+    .no-data {
+        text-align: center;
+        color: #706e6b;
+        padding: 20px;
+        font-style: italic;
+    }
+    .trend-table td,
+    .trend-table th {
+        text-align: center;
+    }
+    .error-msg {
+        max-width: 300px;
+        word-wrap: break-word;
+        font-size: 8pt;
+    }
+</style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="report-header">
+        <h1>ForceGuard Regression Test Report</h1>
+        <div class="subtitle">
+            <apex:outputText rendered="{!run != null}">
+                Suite: {!run.Test_Suite__r.Product_Name__c}
+                &nbsp;|&nbsp;
+                Run Date: <apex:outputText value="{0,date,yyyy-MM-dd HH:mm}">
+                    <apex:param value="{!run.Run_Date__c}" />
+                </apex:outputText>
+                &nbsp;|&nbsp;
+                Status: {!run.Status__c}
+            </apex:outputText>
+        </div>
+    </div>
+
+    <apex:outputPanel rendered="{!run == null}">
+        <div class="no-data">No test run data available. Please provide a valid runId parameter.</div>
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!run != null}">
+
+        <!-- Executive Summary -->
+        <div class="section-title">Executive Summary</div>
+        <div class="summary-box">
+            <table class="summary-grid">
+                <tr>
+                    <td>
+                        <div class="summary-label">Total Tests</div>
+                        <div class="summary-value">
+                            <apex:outputText value="{0,number,#,##0}">
+                                <apex:param value="{!run.Total_Tests__c}" />
+                            </apex:outputText>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="summary-label">Passed</div>
+                        <div class="summary-value pass">
+                            <apex:outputText value="{0,number,#,##0}">
+                                <apex:param value="{!run.Passed__c}" />
+                            </apex:outputText>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="summary-label">Failed</div>
+                        <div class="summary-value fail">
+                            <apex:outputText value="{0,number,#,##0}">
+                                <apex:param value="{!run.Failed__c}" />
+                            </apex:outputText>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="summary-label">Skipped</div>
+                        <div class="summary-value">
+                            <apex:outputText value="{0,number,#,##0}">
+                                <apex:param value="{!run.Skipped__c}" />
+                            </apex:outputText>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="summary-label">Pass Rate</div>
+                        <div class="summary-value {!IF(passRate >= 90, 'pass', IF(passRate >= 70, 'warn', 'fail'))}">
+                            <apex:outputText value="{0,number,#,##0.0}">
+                                <apex:param value="{!passRate}" />
+                            </apex:outputText>%
+                        </div>
+                    </td>
+                    <td>
+                        <div class="summary-label">Duration</div>
+                        <div class="summary-value">
+                            <apex:outputText value="{0,number,#,##0.0}">
+                                <apex:param value="{!run.Duration_Seconds__c}" />
+                            </apex:outputText>s
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="summary-label">Regressions</div>
+                        <div class="summary-value {!IF(regressionCount > 0, 'fail', 'pass')}">
+                            {!regressionCount}
+                        </div>
+                    </td>
+                    <td colspan="2">
+                        <div class="summary-label">Run Name</div>
+                        <div class="summary-value" style="font-size: 11pt;">{!run.Name}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Per-Layer Results -->
+        <div class="section-title">Results by Layer</div>
+        <table class="data-table">
+            <tr>
+                <th>Layer</th>
+                <th>Passed</th>
+                <th>Failed</th>
+                <th>Skipped</th>
+                <th>Total</th>
+                <th>Pass Rate</th>
+            </tr>
+            <apex:repeat value="{!layerBreakdown}" var="layerName">
+                <tr>
+                    <td><strong>{!layerName}</strong></td>
+                    <td class="status-passed">{!layerBreakdown[layerName].passed}</td>
+                    <td class="status-failed">{!layerBreakdown[layerName].failed}</td>
+                    <td class="status-skipped">{!layerBreakdown[layerName].skipped}</td>
+                    <td>{!layerBreakdown[layerName].total}</td>
+                    <td>
+                        <apex:outputText value="{0,number,#,##0.0}">
+                            <apex:param value="{!layerBreakdown[layerName].passRate}" />
+                        </apex:outputText>%
+                    </td>
+                </tr>
+            </apex:repeat>
+        </table>
+
+        <!-- Failure Details -->
+        <apex:outputPanel rendered="{!run.Failed__c > 0}">
+            <div class="section-title">Failure Details</div>
+            <table class="data-table">
+                <tr>
+                    <th>Test Case</th>
+                    <th>Layer</th>
+                    <th>Error Message</th>
+                    <th>Regression</th>
+                </tr>
+                <apex:repeat value="{!results}" var="result">
+                    <apex:outputPanel rendered="{!result.Status__c == 'Failed' || result.Status__c == 'Error'}" layout="none">
+                        <tr class="{!IF(result.Is_Regression__c, 'regression-row', 'failure-row')}">
+                            <td>{!result.Test_Case__r.Title__c}</td>
+                            <td>{!result.Layer__c}</td>
+                            <td class="error-msg">{!result.Error_Message__c}</td>
+                            <td>
+                                <apex:outputPanel rendered="{!result.Is_Regression__c}">
+                                    <span class="regression-badge">REGRESSION</span>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!NOT(result.Is_Regression__c)}">
+                                    -
+                                </apex:outputPanel>
+                            </td>
+                        </tr>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </table>
+        </apex:outputPanel>
+
+        <!-- Trend Data -->
+        <apex:outputPanel rendered="{!trendData.size > 0}">
+            <div class="section-title">Trend (Last {!trendData.size} Runs)</div>
+            <table class="data-table trend-table">
+                <tr>
+                    <th>Run</th>
+                    <th>Date</th>
+                    <th>Total Tests</th>
+                    <th>Failures</th>
+                    <th>Pass Rate</th>
+                </tr>
+                <apex:repeat value="{!trendData}" var="point">
+                    <tr>
+                        <td>{!point['runName']}</td>
+                        <td>
+                            <apex:outputText value="{0,date,yyyy-MM-dd}">
+                                <apex:param value="{!point['runDate']}" />
+                            </apex:outputText>
+                        </td>
+                        <td>{!point['totalTests']}</td>
+                        <td>{!point['failures']}</td>
+                        <td>
+                            <apex:outputText value="{0,number,#,##0.0}">
+                                <apex:param value="{!point['passRate']}" />
+                            </apex:outputText>%
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </apex:outputPanel>
+
+        <!-- Footer -->
+        <div class="footer-text">
+            Generated by ForceGuard on
+            <apex:outputText value="{0,date,yyyy-MM-dd HH:mm:ss}">
+                <apex:param value="{!generatedAt}" />
+            </apex:outputText>
+        </div>
+
+    </apex:outputPanel>
+
+</body>
+</html>
+</apex:page>

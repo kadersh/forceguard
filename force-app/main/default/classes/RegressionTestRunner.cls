@@ -227,6 +227,37 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
             // Reporter may not be deployed yet; log but do not fail the run
             System.debug(LoggingLevel.WARN, 'RegressionTestReporter not available: ' + e.getMessage());
         }
+
+        // Publish platform event for LWC auto-refresh
+        try {
+            String suiteName = '';
+            List<Regression_Test_Suite__c> suiteInfo = [
+                SELECT Product_Name__c FROM Regression_Test_Suite__c
+                WHERE Id = :suiteId LIMIT 1
+            ];
+            if (!suiteInfo.isEmpty()) {
+                suiteName = suiteInfo[0].Product_Name__c;
+            }
+
+            ForceGuard_Test_Complete__e evt = new ForceGuard_Test_Complete__e(
+                Test_Run_Id__c = runId,
+                Suite_Name__c = suiteName,
+                Status__c = overallStatus,
+                Pass_Rate__c = totalTests > 0
+                    ? (Decimal) totalPassed / totalTests : 0,
+                Message__c = overallStatus + ': ' + totalPassed + '/' + totalTests + ' passed'
+            );
+            EventBus.publish(evt);
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Platform event publish failed: ' + e.getMessage());
+        }
+
+        // Enqueue email notification
+        try {
+            System.enqueueJob(new RegressionTestNotifier(runId));
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Notification enqueue failed: ' + e.getMessage());
+        }
     }
 
     /**

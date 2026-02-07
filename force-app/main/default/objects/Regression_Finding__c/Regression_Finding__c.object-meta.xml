@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Captures a regression finding when a previously-passing test case fails during a regression test run. Links to the test case, run, and result for traceability.</description>
+    <enableActivities>false</enableActivities>
+    <enableReports>true</enableReports>
+    <label>Regression Finding</label>
+    <nameField>
+        <displayFormat>FND-{0000}</displayFormat>
+        <label>Finding Number</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Regression Findings</pluralLabel>
+    <sharingModel>ReadWrite</sharingModel>
+</CustomObject>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Test_Run__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The test run in which the regression was found</description>
+    <label>Test Run</label>
+    <referenceTo>Regression_Test_Run__c</referenceTo>
+    <relationshipLabel>Regression Findings</relationshipLabel>
+    <relationshipName>Regression_Findings</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

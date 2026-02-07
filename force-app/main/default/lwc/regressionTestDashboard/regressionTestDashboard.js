@@ -1,12 +1,15 @@
 import { LightningElement, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { subscribe, unsubscribe, onError } from 'lightning/empApi';
 import getDashboardSummary from '@salesforce/apex/RegressionDashboardController.getDashboardSummary';
 import getSuiteOverviews from '@salesforce/apex/RegressionDashboardController.getSuiteOverviews';
 import getRecentRuns from '@salesforce/apex/RegressionDashboardController.getRecentRuns';
 import runSuiteApex from '@salesforce/apex/RegressionDashboardController.runSuite';
 import getBatchJobStatus from '@salesforce/apex/RegressionDashboardController.getBatchJobStatus';
 import scheduleRunApex from '@salesforce/apex/RegressionDashboardController.scheduleRun';
+import getScheduleStatusApex from '@salesforce/apex/RegressionDashboardController.getScheduleStatus';
+import unscheduleRunsApex from '@salesforce/apex/RegressionDashboardController.unscheduleRuns';
 
 const POLL_INTERVAL_MS = 3000;
 const COMPLETED_STATUSES = ['Completed', 'Failed', 'Aborted'];
@@ -99,6 +102,12 @@ export default class RegressionTestDashboard extends LightningElement {
     showScheduleModal = false;
     selectedFrequency = '';
 
+    // Schedule status
+    scheduleInfo;
+
+    // Platform event subscription
+    _subscription = null;
+
     get frequencyOptions() {
         return [
             { label: 'Daily (2:00 AM)', value: 'daily' },
@@ -181,8 +190,73 @@ export default class RegressionTestDashboard extends LightningElement {
         this._checkLoading();
     }
 
+    connectedCallback() {
+        this._subscribeToEvent();
+        this._loadScheduleStatus();
+    }
+
     disconnectedCallback() {
         this._stopPolling();
+        this._unsubscribeFromEvent();
+    }
+
+    // --- Platform Event Subscription ---
+    _subscribeToEvent() {
+        const channel = '/event/ForceGuard_Test_Complete__e';
+        subscribe(channel, -1, (message) => {
+            this._handleTestCompleteEvent(message);
+        }).then((response) => {
+            this._subscription = response;
+        });
+        onError((error) => {
+            // Silently handle empApi errors
+            console.error('empApi error:', JSON.stringify(error));
+        });
+    }
+
+    _unsubscribeFromEvent() {
+        if (this._subscription) {
+            unsubscribe(this._subscription);
+            this._subscription = null;
+        }
+    }
+
+    _handleTestCompleteEvent(message) {
+        const payload = message.data.payload;
+        const status = payload.Status__c || 'Unknown';
+        const suite = payload.Suite_Name__c || 'Unknown Suite';
+        const msg = payload.Message__c || '';
+
+        this.isRunning = false;
+        this._stopPolling();
+        this._refreshAll();
+
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Test Run Complete: ' + suite,
+            message: msg,
+            variant: status === 'Completed' ? 'success' : 'warning'
+        }));
+    }
+
+    // --- Schedule Status ---
+    async _loadScheduleStatus() {
+        try {
+            this.scheduleInfo = await getScheduleStatusApex();
+        } catch (err) {
+            this.scheduleInfo = null;
+        }
+    }
+
+    get isCurrentlyScheduled() {
+        return this.scheduleInfo && this.scheduleInfo.isScheduled;
+    }
+
+    get scheduleLabel() {
+        if (!this.scheduleInfo || !this.scheduleInfo.isScheduled) {
+            return 'Not Scheduled';
+        }
+        return this.scheduleInfo.frequency + ' - Next: ' +
+            new Date(this.scheduleInfo.nextFireTime).toLocaleString();
     }
 
     // --- Suite Row Actions ---
@@ -282,6 +356,7 @@ export default class RegressionTestDashboard extends LightningElement {
                 suiteId: null
             });
             this.showScheduleModal = false;
+            await this._loadScheduleStatus();
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Schedule Set',
                 message: 'Regression tests scheduled: ' + this.selectedFrequency,
@@ -290,6 +365,24 @@ export default class RegressionTestDashboard extends LightningElement {
         } catch (err) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Scheduling Error',
+                message: this._reduceError(err),
+                variant: 'error'
+            }));
+        }
+    }
+
+    async handleUnschedule() {
+        try {
+            await unscheduleRunsApex();
+            await this._loadScheduleStatus();
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Schedule Removed',
+                message: 'Automated test runs have been unscheduled.',
+                variant: 'success'
+            }));
+        } catch (err) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error',
                 message: this._reduceError(err),
                 variant: 'error'
             }));
