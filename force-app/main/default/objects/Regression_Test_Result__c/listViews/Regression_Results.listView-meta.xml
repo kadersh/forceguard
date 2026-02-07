@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Regression_Results</fullName>
+    <columns>NAME</columns>
+    <columns>Test_Run__c</columns>
+    <columns>Test_Case__c</columns>
+    <columns>Layer__c</columns>
+    <columns>Status__c</columns>
+    <columns>Error_Message__c</columns>
+    <columns>Duration_Ms__c</columns>
+    <columns>Is_Known_Issue__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Is_Regression__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <label>Regression Results</label>
+</ListView>

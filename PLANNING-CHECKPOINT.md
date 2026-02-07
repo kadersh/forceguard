@@ -231,24 +231,42 @@ If the system crashes, read this file first, then:
   - ~37 new files total
   - Note: Scratch org needs recreation for clean field deployment
 
+- [2026-02-07] PHASE 6 BUILD COMPLETE - Automation & Reporting
+  - Git commit: d4e6a0a (47 files, 3001 insertions) pushed to origin/develop
+  - 143/143 tests passing (100%)
+  - OpenProject WPs closed: 938, 939, 940, 941, 942, 1022, 1023, 907
+  - Components built:
+    - WP#938: Regression_Finding__c object (13 fields) + RegressionTestResultTrigger + RegressionFindingHandler
+    - WP#939: RegressionTestNotifier (Queueable email) + Notification_Recipients__c on CMT
+    - WP#940: ForceGuardReportController + ForceGuardTestReport.page (PDF generation)
+    - WP#941: Platform event wiring (empApi in LWC), schedule status display
+    - WP#942: RegressionTicketCreator (@InvocableMethod, Named Credential callout)
+    - WP#1022: ForceGuard Lightning App (4 tabs)
+    - WP#1023: ForceGuard_User permission set (comprehensive CRUD/FLS/tabs/app/VF)
+    - Bypass_All_Automation custom permission (for data migration users only)
+  - Lessons learned:
+    - VF showHeader must be false when applyHtmlTag is false
+    - Named Credential XML: <type>Legacy</type> is invalid, remove it
+    - CMT field types cannot be converted via deployment - create new field instead
+    - Limits.getEmailInvocations() unreliable in scratch org test context
+    - Bypass_All_Automation should NOT be in standard user perm set (breaks trigger tests)
+
 ## Next Steps
 
-- Recreate scratch org for clean deployment (field metadata corruption)
-- Phase 6: Automation & Reporting (WP#938-942)
-- Phase 7: Documentation & Packaging (WP#943-946)
-- GitHub remote setup needed
+- Phase 7: Documentation & Packaging (WP#943-948)
+- Executable Test Scripts plan (approved, not yet implemented)
 
 ## Recovery Instructions (Updated)
 
 If the system crashes, read this file first, then:
-1. Phases 1-5 are COMPLETE - all source files exist
-2. Git repo is local only (develop + main branches) - needs GitHub remote
-3. Next step: Recreate scratch org, then Phase 6 (Automation & Reporting) - WP#938-942
-4. Scratch org has metadata corruption (some fields missing) - needs recreation
-5. OpenProject project ID 9 has full task structure with descriptions
-6. Architecture plan at planning/architecture-plan.md has all specs (including No Flows policy)
-7. Scratch org: sf project deploy start --source-dir force-app --target-org forceguard-dev
-8. Scratch org alias: forceguard-dev (expires 2026-03-09)
-9. DevHub: AV Production (for creating new scratch orgs)
-10. DO NOT deploy to cm8670 (that's the work sandbox, not for ForceGuard)
-11. GitHub remote needs to be set up (kadersh/forceguard) - source of truth since scratch orgs expire
+1. Phases 1-6 are COMPLETE - all source files exist
+2. Git repo on GitHub: https://github.com/kadersh/forceguard (private), develop branch
+3. Next step: Phase 7 (Documentation & Packaging) - WP#943-948
+4. OpenProject project ID 9 has full task structure with descriptions
+5. Architecture plan at planning/architecture-plan.md has all specs (including No Flows policy)
+6. Scratch org: sf project deploy start --source-dir force-app --target-org forceguard-dev
+7. Scratch org alias: forceguard-dev (expires 2026-03-09), Org ID: 00DRR00000Ne9vU2AR
+8. DevHub: AV Production (for creating new scratch orgs)
+9. DO NOT deploy to cm8670 (that's the work sandbox, not for ForceGuard)
+10. GitHub is source of truth (scratch orgs expire) - push regularly
+11. 143/143 tests passing as of Phase 6 completion

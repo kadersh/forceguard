@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Failed_Runs</fullName>
+    <columns>NAME</columns>
+    <columns>Test_Suite__c</columns>
+    <columns>Run_Date__c</columns>
+    <columns>Total_Tests__c</columns>
+    <columns>Failed__c</columns>
+    <columns>Pass_Rate__c</columns>
+    <columns>Regression_Count__c</columns>
+    <columns>Duration_Seconds__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>Failed</value>
+    </filters>
+    <label>Failed Runs</label>
+</ListView>

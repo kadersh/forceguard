@@ -16,28 +16,28 @@
     <div class="slds-grid slds-gutters slds-m-bottom_medium">
         <div class="slds-col slds-size_1-of-4">
             <lightning-card title="Pass Rate" icon-name="utility:success">
-                <div class="slds-p-around_medium slds-text-align_center">
+                <div class="slds-p-around_medium slds-text-align_center stat-card" onclick={navigateToRuns}>
                     <span class="slds-text-heading_large">{displayPassRate}</span>
                 </div>
             </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-4">
             <lightning-card title="Total Tests" icon-name="utility:checkin">
-                <div class="slds-p-around_medium slds-text-align_center">
+                <div class="slds-p-around_medium slds-text-align_center stat-card" onclick={navigateToRuns}>
                     <span class="slds-text-heading_large">{displayTotalTests}</span>
                 </div>
             </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-4">
             <lightning-card title="Failures" icon-name="utility:error">
-                <div class="slds-p-around_medium slds-text-align_center">
+                <div class="slds-p-around_medium slds-text-align_center stat-card" onclick={navigateToFindings}>
                     <span class="slds-text-heading_large">{displayFailures}</span>
                 </div>
             </lightning-card>
         </div>
         <div class="slds-col slds-size_1-of-4">
             <lightning-card title="Suites" icon-name="utility:layers">
-                <div class="slds-p-around_medium slds-text-align_center">
+                <div class="slds-p-around_medium slds-text-align_center stat-card" onclick={navigateToSuites}>
                     <span class="slds-text-heading_large">{displaySuites}</span>
                 </div>
             </lightning-card>

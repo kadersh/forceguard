@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#1B5E20</headerColor>
+        <logo>ForceGuard_Logo</logo>
+        <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
+    </brand>
     <defaultLandingTab>standard-home</defaultLandingTab>
+    <description>Salesforce-native regression testing framework. Run 4-layer tests across deployment validation, Apex tests, data scenarios, and static analysis. Track regressions, automate notifications, and generate reports to ensure org quality.</description>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>

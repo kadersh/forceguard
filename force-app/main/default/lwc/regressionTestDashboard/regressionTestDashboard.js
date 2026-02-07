@@ -1,6 +1,7 @@
 import { LightningElement, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { NavigationMixin } from 'lightning/navigation';
 import { subscribe, unsubscribe, onError } from 'lightning/empApi';
 import getDashboardSummary from '@salesforce/apex/RegressionDashboardController.getDashboardSummary';
 import getSuiteOverviews from '@salesforce/apex/RegressionDashboardController.getSuiteOverviews';
@@ -68,7 +69,7 @@ const RUN_COLUMNS = [
     }
 ];
 
-export default class RegressionTestDashboard extends LightningElement {
+export default class RegressionTestDashboard extends NavigationMixin(LightningElement) {
     // Wire results for refreshApex
     _wiredSummary;
     _wiredSuites;
@@ -257,6 +258,59 @@ export default class RegressionTestDashboard extends LightningElement {
         }
         return this.scheduleInfo.frequency + ' - Next: ' +
             new Date(this.scheduleInfo.nextFireTime).toLocaleString();
+    }
+
+    // --- Stat Card Navigation ---
+    navigateToRuns() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: 'Regression_Test_Run__c',
+                actionName: 'list'
+            },
+            state: {
+                filterName: 'Recent'
+            }
+        });
+    }
+
+    navigateToFailures() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: 'Regression_Test_Result__c',
+                actionName: 'list'
+            },
+            state: {
+                filterName: 'Recent'
+            }
+        });
+    }
+
+    navigateToSuites() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: 'Regression_Test_Suite__c',
+                actionName: 'list'
+            },
+            state: {
+                filterName: 'Recent'
+            }
+        });
+    }
+
+    navigateToFindings() {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: 'Regression_Finding__c',
+                actionName: 'list'
+            },
+            state: {
+                filterName: 'Recent'
+            }
+        });
     }
 
     // --- Suite Row Actions ---

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All_Test_Suites</fullName>
+    <columns>NAME</columns>
+    <columns>Product_Name__c</columns>
+    <columns>Version__c</columns>
+    <columns>Target_Org__c</columns>
+    <columns>Is_Active__c</columns>
+    <columns>Last_Run_Date__c</columns>
+    <columns>Last_Run_Status__c</columns>
+    <columns>Product_Namespace__c</columns>
+    <columns>CREATEDBY_USER</columns>
+    <filterScope>Everything</filterScope>
+    <label>All Test Suites</label>
+</ListView>

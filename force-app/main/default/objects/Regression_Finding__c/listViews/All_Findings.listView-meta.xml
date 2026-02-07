@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>All_Findings</fullName>
+    <columns>NAME</columns>
+    <columns>Test_Case__c</columns>
+    <columns>Test_Run__c</columns>
+    <columns>Suite_Name__c</columns>
+    <columns>Status__c</columns>
+    <columns>Priority__c</columns>
+    <columns>Layer__c</columns>
+    <columns>Category__c</columns>
+    <columns>Finding_Date__c</columns>
+    <columns>External_Ticket_Id__c</columns>
+    <filterScope>Everything</filterScope>
+    <label>All Findings</label>
+</ListView>
