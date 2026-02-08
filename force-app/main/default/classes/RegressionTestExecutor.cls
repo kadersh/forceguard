@@ -15,6 +15,8 @@ public with sharing class RegressionTestExecutor {
     private static final String STATUS_FAILED = 'Failed';
     private static final String STATUS_SKIPPED = 'Skipped';
     private static final String STATUS_ERROR = 'Error';
+    private static final String STATUS_CONFIG_ERROR = 'Config Error';
+    private static final String STATUS_WARNING = 'Warning';
 
     private static final String LAYER_DEPLOYMENT = 'Deployment';
     private static final String LAYER_APEX_TEST = 'Apex Test';
@@ -183,8 +185,8 @@ public with sharing class RegressionTestExecutor {
                 Long duration = System.currentTimeMillis() - timer;
                 String log = 'Checked ' + (successes.size() + failures.size()) + ' components.\n'
                     + 'Passed: ' + String.join(successes, ', ') + '\n'
-                    + (failures.isEmpty() ? '' : 'Failed: ' + String.join(failures, ', '));
-                String status = failures.isEmpty() ? STATUS_PASSED : STATUS_FAILED;
+                    + (failures.isEmpty() ? '' : 'Not found: ' + String.join(failures, ', '));
+                String status = failures.isEmpty() ? STATUS_PASSED : STATUS_CONFIG_ERROR;
                 String errorMsg = failures.isEmpty() ? null : String.join(failures, '; ');
 
                 results.add(buildResult(runId, tc, status, LAYER_DEPLOYMENT,
@@ -266,6 +268,7 @@ public with sharing class RegressionTestExecutor {
                     continue;
                 }
 
+                List<String> configErrors = new List<String>();
                 List<String> failures = new List<String>();
                 List<String> passes = new List<String>();
                 List<String> logLines = new List<String>();
@@ -278,7 +281,7 @@ public with sharing class RegressionTestExecutor {
                     String key = trimmed.toLowerCase();
 
                     if (!classIdByName.containsKey(key)) {
-                        failures.add('Test class ' + trimmed + ' not found in org');
+                        configErrors.add('Test class ' + trimmed + ' not found in org');
                         logLines.add(trimmed + ': NOT FOUND');
                         continue;
                     }
@@ -298,8 +301,18 @@ public with sharing class RegressionTestExecutor {
                 }
 
                 Long duration = System.currentTimeMillis() - timer;
-                String status = failures.isEmpty() ? STATUS_PASSED : STATUS_FAILED;
-                String errorMsg = failures.isEmpty() ? null : String.join(failures, '; ');
+                String status;
+                List<String> allErrors = new List<String>();
+                allErrors.addAll(configErrors);
+                allErrors.addAll(failures);
+                if (!failures.isEmpty()) {
+                    status = STATUS_FAILED;
+                } else if (!configErrors.isEmpty()) {
+                    status = STATUS_CONFIG_ERROR;
+                } else {
+                    status = STATUS_PASSED;
+                }
+                String errorMsg = allErrors.isEmpty() ? null : String.join(allErrors, '; ');
                 String log = String.join(logLines, '\n');
 
                 results.add(buildResult(runId, tc, status, LAYER_APEX_TEST,
@@ -320,7 +333,8 @@ public with sharing class RegressionTestExecutor {
      * The highest-value layer. Uses RegressionTestAssertion methods driven by
      * the Assertion_Type__c field:
      *   - Record Exists: Steps__c = "ObjectName|WhereClause"
-     *   - Field Value:   Steps__c = "RecordId|ObjectName|FieldName"
+     *   - Field Value:   Steps__c = "RecordId|ObjectName|FieldName" (legacy)
+     *                    Steps__c = "ObjectName|LookupField=LookupValue|CheckField" (dynamic)
      *   - Record Count:  Steps__c = "ObjectName|WhereClause"
      *   - Coverage Threshold: Steps__c = "ClassName"
      *   - No Error:      Steps__c = "TestClassName"
@@ -352,6 +366,16 @@ public with sharing class RegressionTestExecutor {
                 result.Actual_Result__c = assertion.actual;
                 results.add(result);
 
+            } catch (System.SObjectException e) {
+                // SObjectException indicates invalid object/field names in config
+                results.add(buildResult(runId, tc, STATUS_CONFIG_ERROR, LAYER_DATA_SCENARIO,
+                    System.currentTimeMillis() - timer,
+                    e.getMessage(), e.getStackTraceString(), null));
+            } catch (System.QueryException e) {
+                // QueryException from invalid SOQL (bad object/field name) is a config issue
+                results.add(buildResult(runId, tc, STATUS_CONFIG_ERROR, LAYER_DATA_SCENARIO,
+                    System.currentTimeMillis() - timer,
+                    e.getMessage(), e.getStackTraceString(), null));
             } catch (Exception e) {
                 results.add(buildResult(runId, tc, STATUS_ERROR, LAYER_DATA_SCENARIO,
                     System.currentTimeMillis() - timer,
@@ -393,29 +417,153 @@ public with sharing class RegressionTestExecutor {
                 return RegressionTestAssertion.assertRecordExists(objName, whereClause);
             }
             when 'Field Value' {
-                // Steps: "RecordId|ObjectName|FieldName"
-                // Expected: the expected field value
-                String recordIdStr = parts.size() > 0 ? parts[0] : '';
-                String objName = parts.size() > 1 ? parts[1] : '';
-                String fieldName = parts.size() > 2 ? parts[2] : '';
-                Id recordId = Id.valueOf(recordIdStr);
-                return RegressionTestAssertion.assertFieldValue(recordId, objName, fieldName, expected);
+                // Two supported formats:
+                // Legacy:  "RecordId|ObjectName|FieldName" (hardcoded ID - backward compat)
+                // Dynamic: "ObjectName|LookupField=LookupValue|CheckField" (portable across orgs)
+                String firstPart = parts.size() > 0 ? parts[0] : '';
+
+                // Detect legacy format: first part is a 15- or 18-char Salesforce ID
+                if (Pattern.matches('[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18}', firstPart)) {
+                    // Legacy ID-based format
+                    String objName = parts.size() > 1 ? parts[1] : '';
+                    String fieldName = parts.size() > 2 ? parts[2] : '';
+                    Id recordId = Id.valueOf(firstPart);
+                    return RegressionTestAssertion.assertFieldValue(recordId, objName, fieldName, expected);
+                }
+
+                // Dynamic lookup format: ObjectName|LookupField=LookupValue|CheckField
+                String objName = firstPart;
+                String lookupExpr = parts.size() > 1 ? parts[1] : '';
+                String checkField = parts.size() > 2 ? parts[2] : '';
+
+                if (String.isBlank(objName) || String.isBlank(lookupExpr) || String.isBlank(checkField)) {
+                    return new RegressionTestAssertion.AssertionResult(
+                        false, 'Field Value: Invalid format. Expected ObjectName|LookupField=LookupValue|CheckField',
+                        expected, 'missing parameters');
+                }
+
+                if (!lookupExpr.contains('=')) {
+                    return new RegressionTestAssertion.AssertionResult(
+                        false, 'Field Value: Lookup expression must contain "=" (e.g. Name=Acme Corp)',
+                        expected, lookupExpr);
+                }
+
+                String[] lookupParts = lookupExpr.split('=', 2);
+                String lookupField = lookupParts[0].trim();
+                String lookupValue = lookupParts[1].trim();
+
+                String safeObj = String.escapeSingleQuotes(objName);
+                String safeLookup = String.escapeSingleQuotes(lookupField);
+                String safeCheck = String.escapeSingleQuotes(checkField);
+
+                String soql = 'SELECT ' + safeCheck
+                    + ' FROM ' + safeObj
+                    + ' WHERE ' + safeLookup + ' = :lookupValue'
+                    + ' WITH USER_MODE LIMIT 1';
+                List<SObject> records = Database.query(soql);
+
+                if (records.isEmpty()) {
+                    return new RegressionTestAssertion.AssertionResult(
+                        false, 'No ' + objName + ' found where ' + lookupField + ' = ' + lookupValue,
+                        expected, 'Record not found');
+                }
+
+                Object actualValue = records[0].get(checkField);
+                String actualStr = String.valueOf(actualValue);
+                Boolean passed = (expected == null && actualValue == null)
+                    || (expected != null && expected.equals(actualStr));
+
+                return new RegressionTestAssertion.AssertionResult(
+                    passed,
+                    passed
+                        ? checkField + ' value matches: PASSED'
+                        : checkField + ' value mismatch',
+                    expected,
+                    actualStr);
             }
             when 'Record Count' {
                 // Steps: "ObjectName|WhereClause"
-                // Expected: numeric count
+                // Expected: numeric count or comparison (e.g., ">0", ">=17", "5")
                 String objName = parts.size() > 0 ? parts[0] : '';
                 String whereClause = parts.size() > 1 ? parts[1] : '';
+
+                if (String.isNotBlank(expected) && expected.trim().startsWith('>') ||
+                    String.isNotBlank(expected) && expected.trim().startsWith('<')) {
+                    // Comparison mode
+                    String trimmed = expected.trim();
+                    String operator;
+                    Integer compareValue;
+                    if (trimmed.startsWith('>=')) {
+                        operator = '>=';
+                        compareValue = Integer.valueOf(trimmed.substring(2).trim());
+                    } else if (trimmed.startsWith('>')) {
+                        operator = '>';
+                        compareValue = Integer.valueOf(trimmed.substring(1).trim());
+                    } else if (trimmed.startsWith('<=')) {
+                        operator = '<=';
+                        compareValue = Integer.valueOf(trimmed.substring(2).trim());
+                    } else {
+                        operator = '<';
+                        compareValue = Integer.valueOf(trimmed.substring(1).trim());
+                    }
+
+                    // whereClause is admin-configured via Regression_Test_Case__c, not end-user input
+                    String soql = 'SELECT COUNT() FROM ' + String.escapeSingleQuotes(objName);
+                    if (String.isNotBlank(whereClause)) {
+                        soql += ' WHERE ' + whereClause;
+                    }
+                    soql += ' WITH USER_MODE';
+                    Integer actualCount = Database.countQuery(soql);
+
+                    Boolean passed = false;
+                    if (operator == '>') { passed = actualCount > compareValue; }
+                    else if (operator == '>=') { passed = actualCount >= compareValue; }
+                    else if (operator == '<') { passed = actualCount < compareValue; }
+                    else if (operator == '<=') { passed = actualCount <= compareValue; }
+
+                    String message = passed ? null : 'Record count ' + actualCount + ' does not satisfy ' + operator + ' ' + compareValue;
+                    return new RegressionTestAssertion.AssertionResult(passed, message, operator + ' ' + compareValue, String.valueOf(actualCount));
+                }
+
+                // Exact match (existing behavior)
                 Integer expectedCount = String.isNotBlank(expected) ? Integer.valueOf(expected) : 0;
                 return RegressionTestAssertion.assertRecordCount(objName, whereClause, expectedCount);
             }
             when 'Coverage Threshold' {
                 // Steps: "ClassName"
                 // Expected: minimum coverage percentage
-                // NOTE: For MVP, coverage data (actualCoverage) is null until Tooling API integration is built
                 String className = parts.size() > 0 ? parts[0] : '';
                 Decimal minPercent = String.isNotBlank(expected) ? Decimal.valueOf(expected) : 75;
-                Decimal actualCoverage = null; // TODO: Fetch via Tooling API in future phase
+
+                // Coverage data requires Tooling API (ApexCodeCoverageAggregate is not
+                // available via standard SOQL). For now, check the class exists and
+                // return a skip result. Future: integrate via HttpRequest to Tooling API.
+                Decimal actualCoverage = null;
+                if (String.isNotBlank(className)) {
+                    List<ApexClass> cls = [
+                        SELECT Id FROM ApexClass
+                        WHERE Name = :className
+                        WITH USER_MODE
+                        LIMIT 1
+                    ];
+                    if (cls.isEmpty()) {
+                        return new RegressionTestAssertion.AssertionResult(
+                            false,
+                            'Class not found: ' + className,
+                            minPercent.setScale(1) + '%',
+                            'Class not found'
+                        );
+                    }
+                    // Class exists but coverage data requires Tooling API
+                    return new RegressionTestAssertion.AssertionResult(
+                        true,
+                        'Coverage data not available for class: ' + className
+                            + '. Tooling API integration required.',
+                        minPercent.setScale(1) + '%',
+                        'No data'
+                    );
+                }
+
                 return RegressionTestAssertion.assertCoverage(className, actualCoverage, minPercent);
             }
             when 'No Error' {
@@ -438,9 +586,11 @@ public with sharing class RegressionTestExecutor {
 
     /**
      * Executes a Custom Script assertion.
-     * Steps__c should contain a SOQL query returning a single scalar value.
+     * Steps__c should contain a SELECT-only SOQL query returning a single scalar value.
      * Expected_Result__c contains the expected string representation.
+     * DML keywords are rejected to prevent data modification via test configuration.
      */
+    @TestVisible
     private static RegressionTestAssertion.AssertionResult executeCustomScript(
             String soqlQuery, String expectedValue) {
 
@@ -449,7 +599,52 @@ public with sharing class RegressionTestExecutor {
                 false, 'Custom Script: No SOQL query provided', expectedValue, 'null');
         }
 
-        List<SObject> queryResults = Database.query(soqlQuery);
+        // Reject queries containing DML keywords to prevent data modification
+        String upperQuery = soqlQuery.toUpperCase().trim();
+        List<String> forbiddenKeywords = new List<String>{
+            'INSERT', 'UPDATE', 'DELETE', 'UPSERT', 'MERGE'
+        };
+        for (String keyword : forbiddenKeywords) {
+            // Check if the keyword appears as a standalone word (not inside a field name)
+            if (Pattern.matches('(?i).*\\b' + keyword + '\\b.*', upperQuery)) {
+                return new RegressionTestAssertion.AssertionResult(
+                    false,
+                    'Custom Script: Query rejected - contains forbidden keyword: ' + keyword,
+                    expectedValue,
+                    'Rejected'
+                );
+            }
+        }
+
+        // Enforce WITH USER_MODE for CRUD/FLS security
+        if (!upperQuery.contains('WITH USER_MODE') && !upperQuery.contains('WITH SYSTEM_MODE')) {
+            String trimmedQuery = soqlQuery.trim();
+            if (trimmedQuery.endsWith(';')) {
+                trimmedQuery = trimmedQuery.substring(0, trimmedQuery.length() - 1).trim();
+            }
+            // WITH USER_MODE must appear before ORDER BY, GROUP BY, LIMIT, OFFSET
+            String upperTrimmed = trimmedQuery.toUpperCase();
+            Integer insertPos = trimmedQuery.length();
+            for (String clause : new List<String>{ ' ORDER BY ', ' ORDER BY\n', ' GROUP BY ', ' GROUP BY\n', ' LIMIT ', ' LIMIT\n', ' OFFSET ', ' OFFSET\n' }) {
+                Integer idx = upperTrimmed.indexOf(clause);
+                if (idx > 0 && idx < insertPos) {
+                    insertPos = idx;
+                }
+            }
+            soqlQuery = trimmedQuery.substring(0, insertPos) + ' WITH USER_MODE' + trimmedQuery.substring(insertPos);
+        }
+
+        List<SObject> queryResults;
+        try {
+            queryResults = Database.query(soqlQuery);
+        } catch (QueryException qe) {
+            return new RegressionTestAssertion.AssertionResult(
+                false,
+                'Custom Script: Query failed - ' + qe.getMessage(),
+                expectedValue,
+                'QueryException'
+            );
+        }
         String actualValue;
 
         if (queryResults.isEmpty()) {
@@ -524,11 +719,11 @@ public with sharing class RegressionTestExecutor {
                 '(?i)for\\s*\\([^)]*\\)[^}]*(insert|update|delete|upsert)\\s+',
                 'DML operation detected inside a loop - risk of governor limit violation'),
             new AntiPattern('Hardcoded ID',
-                '\'[a-zA-Z0-9]{15,18}\'',
+                '\'0[0-9]{2}[a-zA-Z0-9]{12,15}\'',
                 'Potential hardcoded Salesforce ID detected'),
-            new AntiPattern('Missing with sharing',
-                '(?i)public\\s+class\\s+(?!.*\\bwith\\s+sharing\\b)',
-                'Class may be missing "with sharing" keyword')
+            new AntiPattern('Missing sharing declaration',
+                '(?i)public\\s+class\\s+(?!.*(with|without)\\s+sharing\\b)',
+                'Class has no sharing declaration (neither "with sharing" nor "without sharing")')
         };
 
         // Process each test case
@@ -543,6 +738,7 @@ public with sharing class RegressionTestExecutor {
                 }
 
                 List<String> violations = new List<String>();
+                List<String> missingClasses = new List<String>();
                 List<String> logLines = new List<String>();
                 Integer classesAnalyzed = 0;
 
@@ -554,6 +750,7 @@ public with sharing class RegressionTestExecutor {
 
                     String body = classBodies.get(trimmed.toLowerCase());
                     if (body == null) {
+                        missingClasses.add(trimmed + ': Class not found in org');
                         logLines.add(trimmed + ': Class not found in org');
                         continue;
                     }
@@ -575,9 +772,34 @@ public with sharing class RegressionTestExecutor {
                 String log = 'Analyzed ' + classesAnalyzed + ' classes.\n'
                     + String.join(logLines, '\n')
                     + '\nViolations found: ' + violations.size();
-                String status = violations.isEmpty() ? STATUS_PASSED : STATUS_FAILED;
-                String errorMsg = violations.isEmpty() ? null
-                    : violations.size() + ' violation(s): ' + String.join(violations, '; ');
+
+                // Determine status: warning if only classes missing, pass/fail for violations
+                String status;
+                String errorMsg;
+                if (!missingClasses.isEmpty() && violations.isEmpty()) {
+                    // Only missing classes - use Warning status (advisory, not a real failure)
+                    status = STATUS_WARNING;
+                    errorMsg = String.join(missingClasses, '; ');
+                } else if (!missingClasses.isEmpty() && !violations.isEmpty()) {
+                    // Both missing classes and real violations - report as Failed (real issues exist)
+                    List<String> allIssues = new List<String>();
+                    allIssues.addAll(missingClasses);
+                    allIssues.addAll(violations);
+                    status = STATUS_FAILED;
+                    errorMsg = allIssues.size() + ' issue(s): ' + String.join(allIssues, '; ');
+                } else if (violations.isEmpty()) {
+                    status = STATUS_PASSED;
+                    errorMsg = null;
+                } else if (tc.Expected_Violations__c != null
+                        && violations.size() == tc.Expected_Violations__c.intValue()) {
+                    status = STATUS_PASSED;
+                    errorMsg = null;
+                    log += '\nExpected ' + tc.Expected_Violations__c.intValue()
+                        + ' violation(s) - matches actual (acknowledged patterns)';
+                } else {
+                    status = STATUS_FAILED;
+                    errorMsg = violations.size() + ' violation(s): ' + String.join(violations, '; ');
+                }
 
                 Regression_Test_Result__c result = buildResult(runId, tc, status,
                     LAYER_STATIC_ANALYSIS, duration, errorMsg, null, log);

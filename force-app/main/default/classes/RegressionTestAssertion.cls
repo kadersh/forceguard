@@ -82,10 +82,13 @@ public with sharing class RegressionTestAssertion {
             return new AssertionResult(false, 'sObjectType is required', 'A valid sObject name', 'blank');
         }
 
+        // whereClause is admin-configured via Regression_Test_Case__c metadata, not end-user input.
+        // This is acceptable for dynamic queries in a managed package where admins configure test cases.
         String query = 'SELECT COUNT() FROM ' + String.escapeSingleQuotes(sObjectType);
         if (String.isNotBlank(whereClause)) {
             query += ' WHERE ' + whereClause;
         }
+        query += ' WITH USER_MODE';
 
         Integer count = Database.countQuery(query);
         Boolean passed = count > 0;
@@ -112,10 +115,13 @@ public with sharing class RegressionTestAssertion {
             return new AssertionResult(false, 'sObjectType is required', String.valueOf(expectedCount), 'blank');
         }
 
+        // whereClause is admin-configured via Regression_Test_Case__c metadata, not end-user input.
+        // This is acceptable for dynamic queries in a managed package where admins configure test cases.
         String query = 'SELECT COUNT() FROM ' + String.escapeSingleQuotes(sObjectType);
         if (String.isNotBlank(whereClause)) {
             query += ' WHERE ' + whereClause;
         }
+        query += ' WITH USER_MODE';
 
         Integer actualCount = Database.countQuery(query);
         Boolean passed = actualCount == expectedCount;

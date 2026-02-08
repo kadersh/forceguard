@@ -28,6 +28,16 @@
                 <default>false</default>
                 <label>Error</label>
             </value>
+            <value>
+                <fullName>Config Error</fullName>
+                <default>false</default>
+                <label>Config Error</label>
+            </value>
+            <value>
+                <fullName>Warning</fullName>
+                <default>false</default>
+                <label>Warning</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

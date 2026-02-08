@@ -259,6 +259,157 @@ private class RegressionTestRunnerTest {
     }
 
     @IsTest
+    static void testStrictModeCascadeSkipsSubsequentLayers() {
+        User testUser = [SELECT Id FROM User WHERE Alias = 'fgtest' LIMIT 1];
+
+        System.runAs(testUser) {
+            Regression_Test_Suite__c suite = ForceGuardTestDataFactory.createSuite('Strict Cascade Test');
+            suite.Cascade_Mode__c = 'Strict';
+            insert suite;
+
+            // Apex Test case with a nonexistent test class that ran and "failed" previously
+            // Use a class that exists but has no test results - the Apex Test layer
+            // marks missing test results as a pass (exists but no history).
+            // Instead, use a Data Scenario with an assertion that genuinely fails
+            // to trigger cascade on a blocking layer substitute.
+            // We'll use the Deployment layer with both a valid AND invalid component
+            // so the overall status is 'Failed' (not just Config Error)
+            Regression_Test_Case__c deployCase = new Regression_Test_Case__c(
+                Test_Suite__c = suite.Id,
+                Title__c = 'Strict Bad Deploy',
+                Test_Layer__c = 'Deployment',
+                Category__c = 'Functional',
+                Perspective__c = 'Developer',
+                Priority__c = 'P1',
+                Steps__c = 'CustomObject:TotallyFakeObject999__c',
+                Expected_Result__c = 'Pass',
+                Assertion_Type__c = 'No Error',
+                Is_Active__c = true,
+                Execution_Order__c = 1
+            );
+            // Data Scenario case that should be skipped in Strict mode
+            Regression_Test_Case__c dataCase = new Regression_Test_Case__c(
+                Test_Suite__c = suite.Id,
+                Title__c = 'Strict Data Check',
+                Test_Layer__c = 'Data Scenario',
+                Category__c = 'Functional',
+                Perspective__c = 'Developer',
+                Priority__c = 'P1',
+                Steps__c = 'Account',
+                Expected_Result__c = 'Pass',
+                Assertion_Type__c = 'Record Exists',
+                Is_Active__c = true,
+                Execution_Order__c = 2
+            );
+            insert new List<Regression_Test_Case__c>{ deployCase, dataCase };
+
+            Test.startTest();
+            RegressionTestRunner runner = new RegressionTestRunner(suite.Id);
+            Database.executeBatch(runner, 200);
+            Test.stopTest();
+
+            Regression_Test_Run__c run = [
+                SELECT Id, Status__c, Failed__c, Skipped__c
+                FROM Regression_Test_Run__c
+                WHERE Test_Suite__c = :suite.Id
+                ORDER BY CreatedDate DESC LIMIT 1
+            ];
+            System.assertNotEquals(null, run, 'Run record should exist');
+
+            // In Strict mode, Data Scenario case should be Skipped because deploy had failures
+            List<Regression_Test_Result__c> skippedResults = [
+                SELECT Status__c, Layer__c
+                FROM Regression_Test_Result__c
+                WHERE Test_Run__c = :run.Id AND Status__c = 'Skipped'
+            ];
+            System.assert(!skippedResults.isEmpty(),
+                'Strict mode should skip subsequent layers when blocking layer fails');
+        }
+    }
+
+    @IsTest
+    static void testContinueModeRunsAllLayers() {
+        User testUser = [SELECT Id FROM User WHERE Alias = 'fgtest' LIMIT 1];
+
+        System.runAs(testUser) {
+            Regression_Test_Suite__c suite = ForceGuardTestDataFactory.createSuite('Continue Cascade Test');
+            suite.Cascade_Mode__c = 'Continue';
+            insert suite;
+
+            // Deployment case with invalid component to force failure
+            Regression_Test_Case__c deployCase = new Regression_Test_Case__c(
+                Test_Suite__c = suite.Id,
+                Title__c = 'Continue Bad Deploy',
+                Test_Layer__c = 'Deployment',
+                Category__c = 'Functional',
+                Perspective__c = 'Developer',
+                Priority__c = 'P1',
+                Steps__c = 'CustomObject:TotallyFakeObject999__c',
+                Expected_Result__c = 'Pass',
+                Assertion_Type__c = 'No Error',
+                Is_Active__c = true,
+                Execution_Order__c = 1
+            );
+            // Data Scenario case that should still run in Continue mode
+            Regression_Test_Case__c dataCase = new Regression_Test_Case__c(
+                Test_Suite__c = suite.Id,
+                Title__c = 'Continue Data Check',
+                Test_Layer__c = 'Data Scenario',
+                Category__c = 'Functional',
+                Perspective__c = 'Developer',
+                Priority__c = 'P1',
+                Steps__c = 'Account',
+                Expected_Result__c = 'Pass',
+                Assertion_Type__c = 'Record Exists',
+                Is_Active__c = true,
+                Execution_Order__c = 2
+            );
+            insert new List<Regression_Test_Case__c>{ deployCase, dataCase };
+
+            Test.startTest();
+            RegressionTestRunner runner = new RegressionTestRunner(suite.Id);
+            Database.executeBatch(runner, 200);
+            Test.stopTest();
+
+            Regression_Test_Run__c run = [
+                SELECT Id, Status__c
+                FROM Regression_Test_Run__c
+                WHERE Test_Suite__c = :suite.Id
+                ORDER BY CreatedDate DESC LIMIT 1
+            ];
+            System.assertNotEquals(null, run, 'Run record should exist');
+
+            // In Continue mode, no results should be Skipped due to cascade
+            List<Regression_Test_Result__c> skippedResults = [
+                SELECT Status__c, Layer__c
+                FROM Regression_Test_Result__c
+                WHERE Test_Run__c = :run.Id AND Status__c = 'Skipped'
+            ];
+            System.assertEquals(0, skippedResults.size(),
+                'Continue mode should not skip any layers, but found ' + skippedResults.size() + ' skipped');
+        }
+    }
+
+    @IsTest
+    static void testDefaultCascadeModeIsContinue() {
+        User testUser = [SELECT Id FROM User WHERE Alias = 'fgtest' LIMIT 1];
+
+        System.runAs(testUser) {
+            // Create suite without setting Cascade_Mode__c
+            Regression_Test_Suite__c suite = ForceGuardTestDataFactory.createSuite('Default Mode Test');
+            insert suite;
+
+            Test.startTest();
+            RegressionTestRunner runner = new RegressionTestRunner(suite.Id);
+            Test.stopTest();
+
+            // Verify the cascade mode defaults to Continue
+            System.assertEquals('Continue', runner.cascadeMode,
+                'Default cascade mode should be Continue when field is blank');
+        }
+    }
+
+    @IsTest
     static void testConstructorWithTriggerType() {
         User testUser = [SELECT Id FROM User WHERE Alias = 'fgtest' LIMIT 1];
 

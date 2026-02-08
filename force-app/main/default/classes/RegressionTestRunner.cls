@@ -6,7 +6,9 @@
  *   Layer 3 (Data Scenario) - non-blocking
  *   Layer 4 (Static Analysis) - non-blocking
  *
- * If Layer 1 or 2 fails, all subsequent layers are skipped.
+ * Cascade behavior is configurable via Suite.Cascade_Mode__c:
+ *   Strict: If Layer 1 or 2 fails, all subsequent layers are skipped.
+ *   Continue (default): All layers run regardless of failures.
  */
 public with sharing class RegressionTestRunner implements Database.Batchable<SObject>, Database.AllowsCallouts, Database.Stateful {
 
@@ -37,8 +39,12 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
     private Integer totalPassed = 0;
     private Integer totalFailed = 0;
     private Integer totalSkipped = 0;
+    private Integer totalConfigErrors = 0;
+    private Integer totalWarnings = 0;
 
     private Boolean blockingLayerFailed = false;
+    @TestVisible
+    private String cascadeMode = 'Continue';
     private Map<String, String> layerStatuses = new Map<String, String>();
     private List<String> errorMessages = new List<String>();
 
@@ -58,6 +64,15 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
     public RegressionTestRunner(Id suiteId, String triggeredBy) {
         this.suiteId = suiteId;
         this.startTime = System.currentTimeMillis();
+
+        // Query cascade mode from the suite
+        List<Regression_Test_Suite__c> suites = [
+            SELECT Cascade_Mode__c FROM Regression_Test_Suite__c
+            WHERE Id = :suiteId WITH SYSTEM_MODE LIMIT 1
+        ];
+        if (!suites.isEmpty() && String.isNotBlank(suites[0].Cascade_Mode__c)) {
+            this.cascadeMode = suites[0].Cascade_Mode__c;
+        }
 
         Regression_Test_Run__c run = new Regression_Test_Run__c(
             Test_Suite__c = suiteId,
@@ -90,7 +105,8 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
         return Database.getQueryLocator([
             SELECT Id, Title__c, Test_Layer__c, Category__c, Steps__c,
                    Expected_Result__c, Assertion_Type__c, Execution_Order__c,
-                   Target_Object__c, Related_Metadata__c, Tags__c, Last_Result_Status__c
+                   Target_Object__c, Related_Metadata__c, Tags__c, Last_Result_Status__c,
+                   Expected_Violations__c
             FROM Regression_Test_Case__c
             WHERE Test_Suite__c = :suiteId
               AND Is_Active__c = true
@@ -147,6 +163,20 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
 
                 if (result.Status__c == STATUS_PASSED) {
                     totalPassed++;
+                } else if (result.Status__c == 'Warning') {
+                    totalWarnings++;
+                    // Warnings are informational only - they do NOT affect pass/fail status
+                    // No cascade behavior, no layer failure
+                } else if (result.Status__c == 'Config Error') {
+                    totalConfigErrors++;
+                    // In Strict mode, config errors also trigger cascade (treat any issue as blocking)
+                    // In Continue mode, config errors are informational only
+                    if (cascadeMode == 'Strict') {
+                        layerHasFailure = true;
+                    }
+                    if (String.isNotBlank(result.Error_Message__c)) {
+                        errorMessages.add(layer + ' [Config]: ' + result.Error_Message__c);
+                    }
                 } else if (result.Status__c == STATUS_FAILED || result.Status__c == 'Error') {
                     totalFailed++;
                     layerHasFailure = true;
@@ -162,8 +192,8 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
             String layerStatus = layerHasFailure ? STATUS_FAILED : STATUS_PASSED;
             layerStatuses.put(layer, layerStatus);
 
-            // If blocking layer failed, flag so subsequent layers are skipped
-            if (isBlockingLayer && layerHasFailure) {
+            // If blocking layer failed and cascade mode is Strict, flag so subsequent layers are skipped
+            if (isBlockingLayer && layerHasFailure && cascadeMode == 'Strict') {
                 blockingLayerFailed = true;
             }
         }
@@ -180,9 +210,9 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
      */
     public void finish(Database.BatchableContext bc) {
         Decimal durationSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
-        Integer totalTests = totalPassed + totalFailed + totalSkipped;
+        Integer totalTests = totalPassed + totalFailed + totalSkipped + totalConfigErrors + totalWarnings;
 
-        // Determine overall run status
+        // Determine overall run status (config errors and warnings do not cause Failed)
         String overallStatus = (totalFailed > 0) ? STATUS_FAILED : STATUS_COMPLETED;
 
         // Build error summary (truncate to fit LongTextArea)
@@ -246,6 +276,8 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
                 Pass_Rate__c = totalTests > 0
                     ? (Decimal) totalPassed / totalTests : 0,
                 Message__c = overallStatus + ': ' + totalPassed + '/' + totalTests + ' passed'
+                    + (totalWarnings > 0 ? ' (' + totalWarnings + ' warnings)' : '')
+                    + (totalConfigErrors > 0 ? ' (' + totalConfigErrors + ' config errors)' : '')
             );
             EventBus.publish(evt);
         } catch (Exception e) {
@@ -273,7 +305,11 @@ public with sharing class RegressionTestRunner implements Database.Batchable<SOb
             throw nullErr;
         }
         RegressionTestRunner runner = new RegressionTestRunner(suiteId);
-        return Database.executeBatch(runner, 50);
+        // Use batch size 2000 (maximum) to prevent layer splitting across batches.
+        // If test cases are split mid-layer, cascade logic may incorrectly skip cases
+        // because Layer 1 cases in batch 2 haven't processed yet when batch 1 finishes.
+        // Since execute() only creates result records (minimal DML), 2000 is safe.
+        return Database.executeBatch(runner, 2000);
     }
 
     /**

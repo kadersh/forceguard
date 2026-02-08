@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Expected_Violations__c</fullName>
+    <description>Expected number of static analysis violations. If actual matches expected, test passes (acknowledged patterns).</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Set this to the number of known/expected violations. If the actual violation count matches, the test passes instead of failing.</inlineHelpText>
+    <label>Expected Violations</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>
